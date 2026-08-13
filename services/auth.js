@@ -1,129 +1,86 @@
-import {
-  createUserWithEmailAndPassword,
-  signInWithEmailAndPassword,
-  signOut,
-  sendPasswordResetEmail,
-} from "firebase/auth";
+import { api } from './api';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-import {
-  doc,
-  setDoc,
-  serverTimestamp,
-  getDoc,
-} from "firebase/firestore";
-
-import { auth, db } from "./firebase";
-
-
-export async function getUserRole(uid) {
-  const userDoc = await getDoc(doc(db, "users", uid));
-
-  if (userDoc.exists()) {
-    return userDoc.data();
+// =========================
+// RÉCUPÉRER LE RÔLE / PROFIL
+// =========================
+export async function getUserRole() {
+  try {
+    const response = await api.get('/auth/profile');
+    return response.data;
+  } catch (error) {
+    console.error("Erreur getUserRole:", error.response?.data || error.message);
+    return null;
   }
-
-  return null;
 }
+
 // =========================
 // INSCRIPTION CLIENT
 // =========================
-
 export async function registerClient(data) {
-  const userCredential =
-    await createUserWithEmailAndPassword(
-      auth,
-      data.email,
-      data.password
-    );
-
-  const user = userCredential.user;
-
-  await setDoc(doc(db, "users", user.uid), {
-    uid: user.uid,
-
-    role: "client",
-
-    firstName: data.firstName,
-
+  const response = await api.post('/auth/register', {
+    name: data.firstName,
     email: data.email,
-
-    createdAt: serverTimestamp(),
+    password: data.password,
+    role: 'client',
   });
 
-  return user;
+  if (response.data.access_token) {
+    await AsyncStorage.setItem('access_token', response.data.access_token);
+  }
+
+  return response.data;
 }
 
 // =========================
 // INSCRIPTION ANNONCEUR
 // =========================
-
 export async function registerPublisher(data) {
+  const response = await api.post('/auth/register', {
+    name: `${data.firstName} ${data.lastName}`,
+    email: data.email,
+    password: data.password,
+    phone: data.phone,
+    city: data.city,
+    publisherType: data.publisherType,
+    role: 'publisher',
+  });
 
-  const userCredential =
-    await createUserWithEmailAndPassword(
-      auth,
-      data.email,
-      data.password
-    );
+  if (response.data.access_token) {
+    await AsyncStorage.setItem('access_token', response.data.access_token);
+  }
 
-
-  const user = userCredential.user;
-
-
-  await setDoc(
-    doc(db, "users", user.uid),
-    {
-      uid: user.uid,
-
-      role: "publisher",
-
-      publisherType: data.publisherType,
-
-      firstName: data.firstName,
-
-      lastName: data.lastName,
-
-      phone: data.phone,
-
-      city: data.city,
-
-      email: data.email,
-
-      createdAt: serverTimestamp(),
-    }
-  );
-
-
-  return user;
+  return response.data;
 }
 
 // =========================
 // CONNEXION
 // =========================
-
 export async function login(email, password) {
-  const userCredential =
-    await signInWithEmailAndPassword(
-      auth,
-      email,
-      password
-    );
+  const response = await api.post('/auth/login', {
+    email,
+    password,
+  });
 
-  return userCredential.user;
+  if (response.data.access_token) {
+    // Stockage immédiat et sécurisé du nouveau token
+    await AsyncStorage.setItem('access_token', response.data.access_token);
+  }
+
+  return response.data;
 }
 
 // =========================
-// DECONNEXION
+// DÉCONNEXION
 // =========================
-
 export async function logout() {
-  await signOut(auth);
+  await AsyncStorage.removeItem('access_token');
 }
 
 // =========================
-// MOT DE PASSE OUBLIE
+// MOT DE PASSE OUBLIÉ
 // =========================
-
 export async function resetPassword(email) {
-  await sendPasswordResetEmail(auth, email);
+  const response = await api.post('/auth/forgot-password', { email });
+  return response.data;
 }

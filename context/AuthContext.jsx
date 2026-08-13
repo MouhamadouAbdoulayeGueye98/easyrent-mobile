@@ -1,52 +1,44 @@
-import {
-  createContext,
-  useContext,
-  useEffect,
-  useState,
-} from "react";
+import React, { createContext, useState, useEffect, useContext } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { api } from '../services/api';
+import { router } from 'expo-router';
 
-import {
-  onAuthStateChanged,
-  signOut,
-} from "firebase/auth";
-
-import { auth } from "../services/firebase";
-
-const AuthContext = createContext();
+const AuthContext = createContext({});
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(
-      auth,
-      (currentUser) => {
-        setUser(currentUser);
+    async function loadStoredUser() {
+      try {
+        const token = await AsyncStorage.getItem('access_token');
+        if (token) {
+          const response = await api.get('/auth/profile');
+          setUser(response.data);
+        }
+      } catch (error) {
+        console.error('Session expirée ou invalide', error);
+        await AsyncStorage.removeItem('access_token');
+      } finally {
         setLoading(false);
       }
-    );
-
-    return unsubscribe;
+    }
+    loadStoredUser();
   }, []);
 
-  async function logout() {
-    await signOut(auth);
-  }
+  const logout = async () => {
+    await AsyncStorage.removeItem('access_token');
+    setUser(null);
+    // Redirection vers la page visiteur / index principal
+    router.replace('/'); 
+  };
 
   return (
-    <AuthContext.Provider
-      value={{
-        user,
-        loading,
-        logout,
-      }}
-    >
+    <AuthContext.Provider value={{ user, setUser, logout, loading }}>
       {children}
     </AuthContext.Provider>
   );
 }
 
-export function useAuth() {
-  return useContext(AuthContext);
-}
+export const useAuth = () => useContext(AuthContext);
