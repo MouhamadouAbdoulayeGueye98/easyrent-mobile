@@ -1,15 +1,15 @@
 import {
   createUserWithEmailAndPassword,
+  sendPasswordResetEmail,
   signInWithEmailAndPassword,
   signOut,
-  sendPasswordResetEmail,
 } from "firebase/auth";
 
 import {
   doc,
-  setDoc,
-  serverTimestamp,
   getDoc,
+  serverTimestamp,
+  setDoc,
 } from "firebase/firestore";
 
 import { auth, db } from "./firebase";
