@@ -5,44 +5,78 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
+  ActivityIndicator,
 } from "react-native";
-
 import { Ionicons } from "@expo/vector-icons";
-import { useState, useRef, useEffect } from "react";
+import { useCallback, useRef, useState } from "react";
+import { useLocalSearchParams, useFocusEffect } from "expo-router";
 
 import Header from "../../components/common/Header";
-import { messages } from "../../constants/messages";
+import { useAuth } from "../../context/AuthContext";
+import { getMessages, sendMessage as sendMessageApi } from "../../services/conversations";
 
 export default function Chat() {
-  const [chatMessages, setChatMessages] = useState(messages);
+  const { id } = useLocalSearchParams();
+  const { user } = useAuth();
+
+  const [chatMessages, setChatMessages] = useState([]);
   const [text, setText] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [sending, setSending] = useState(false);
 
   const flatListRef = useRef(null);
 
-  useEffect(() => {
-    flatListRef.current?.scrollToEnd({
-      animated: true,
-    });
-  }, [chatMessages]);
+  useFocusEffect(
+    useCallback(() => {
+      let isActive = true;
 
-  function sendMessage() {
-    if (!text.trim()) return;
+      async function load() {
+        try {
+          const data = await getMessages(id);
+          if (isActive) {
+            setChatMessages(data);
+            setLoading(false);
+          }
+        } catch (error) {
+          console.error("Erreur chargement messages :", error);
+          if (isActive) setLoading(false);
+        }
+      }
 
-    const now = new Date();
+      load();
+      const interval = setInterval(load, 4000); // simule le temps réel
 
-    const newMessage = {
-      id: Date.now().toString(),
-      sender: "me",
-      text: text.trim(),
-      time:
-        now.getHours().toString().padStart(2, "0") +
-        ":" +
-        now.getMinutes().toString().padStart(2, "0"),
-    };
+      return () => {
+        isActive = false;
+        clearInterval(interval);
+      };
+    }, [id])
+  );
 
-    setChatMessages((prev) => [...prev, newMessage]);
+  async function handleSend() {
+    const content = text.trim();
+    if (!content || sending) return;
 
     setText("");
+    setSending(true);
+
+    try {
+      const newMessage = await sendMessageApi(id, content);
+      setChatMessages((prev) => [...prev, newMessage]);
+    } catch (error) {
+      console.error("Erreur envoi message :", error);
+      setText(content); // on remet le texte si l'envoi échoue
+    } finally {
+      setSending(false);
+    }
+  }
+
+  if (loading) {
+    return (
+      <View style={styles.center}>
+        <ActivityIndicator size="large" color="#2563EB" />
+      </View>
+    );
   }
 
   return (
@@ -55,34 +89,21 @@ export default function Chat() {
         keyExtractor={(item) => item.id}
         contentContainerStyle={styles.messages}
         showsVerticalScrollIndicator={false}
-        renderItem={({ item }) => (
-          <View
-            style={[
-              styles.message,
-              item.sender === "me"
-                ? styles.myMessage
-                : styles.otherMessage,
-            ]}
-          >
-            <Text
-              style={[
-                styles.text,
-                item.sender === "me" && styles.myText,
-              ]}
-            >
-              {item.text}
-            </Text>
-
-            <Text
-              style={[
-                styles.time,
-                item.sender === "me" && styles.myTime,
-              ]}
-            >
-              {item.time}
-            </Text>
-          </View>
-        )}
+        onContentSizeChange={() => flatListRef.current?.scrollToEnd({ animated: true })}
+        renderItem={({ item }) => {
+          const isMine = item.senderId === user?.id;
+          return (
+            <View style={[styles.message, isMine ? styles.myMessage : styles.otherMessage]}>
+              <Text style={[styles.text, isMine && styles.myText]}>{item.content}</Text>
+              <Text style={[styles.time, isMine && styles.myTime]}>
+                {new Date(item.createdAt).toLocaleTimeString("fr-FR", {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })}
+              </Text>
+            </View>
+          );
+        }}
       />
 
       <View style={styles.inputContainer}>
@@ -91,17 +112,10 @@ export default function Chat() {
           value={text}
           onChangeText={setText}
           style={styles.input}
+          multiline
         />
-
-        <TouchableOpacity
-          style={styles.sendButton}
-          onPress={sendMessage}
-        >
-          <Ionicons
-            name="send"
-            size={20}
-            color="#FFFFFF"
-          />
+        <TouchableOpacity style={styles.sendButton} onPress={handleSend} disabled={sending}>
+          <Ionicons name="send" size={20} color="#FFFFFF" />
         </TouchableOpacity>
       </View>
     </View>
@@ -109,55 +123,16 @@ export default function Chat() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#EEF2F7",
-    paddingTop: 40,
-  },
-
-  messages: {
-    padding: 20,
-    paddingBottom: 30,
-  },
-
-  message: {
-    maxWidth: "80%",
-    padding: 14,
-    borderRadius: 18,
-    marginBottom: 12,
-  },
-
-  myMessage: {
-    backgroundColor: "#2563EB",
-    alignSelf: "flex-end",
-  },
-
-  otherMessage: {
-    backgroundColor: "#FFFFFF",
-    alignSelf: "flex-start",
-  },
-
-  text: {
-    color: "#111827",
-    fontSize: 16,
-    lineHeight: 22,
-  },
-
-  myText: {
-    color: "#FFFFFF",
-  },
-
-  time: {
-    marginTop: 6,
-    fontSize: 11,
-    color: "#6B7280",
-    alignSelf: "flex-end",
-  },
-
-  myTime: {
-    color: "#DBEAFE",
-  },
-
+  container: { flex: 1, backgroundColor: "#EEF2F7", paddingTop: 40 },
+  center: { flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: "#EEF2F7" },
+  messages: { padding: 20, paddingBottom: 30 },
+  message: { maxWidth: "80%", padding: 14, borderRadius: 18, marginBottom: 12 },
+  myMessage: { backgroundColor: "#2563EB", alignSelf: "flex-end" },
+  otherMessage: { backgroundColor: "#FFFFFF", alignSelf: "flex-start" },
+  text: { color: "#111827", fontSize: 16, lineHeight: 22 },
+  myText: { color: "#FFFFFF" },
+  time: { marginTop: 6, fontSize: 11, color: "#6B7280", alignSelf: "flex-end" },
+  myTime: { color: "#DBEAFE" },
   inputContainer: {
     flexDirection: "row",
     alignItems: "center",
@@ -166,7 +141,6 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: "#E5E7EB",
   },
-
   input: {
     flex: 1,
     backgroundColor: "#F3F4F6",
@@ -174,8 +148,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 18,
     paddingVertical: 12,
     fontSize: 16,
+    maxHeight: 100,
   },
-
   sendButton: {
     marginLeft: 10,
     width: 50,

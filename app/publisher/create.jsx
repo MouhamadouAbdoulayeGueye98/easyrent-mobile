@@ -1,1 +1,1 @@
-// export { default } from "../publisher-create";
+ export { default } from "../publisher-create";
