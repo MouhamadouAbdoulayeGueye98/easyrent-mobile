@@ -39,9 +39,9 @@ export default function Login() {
       const profile = await getUserRole(user.uid);
 
       if (profile.role === "publisher") {
-        router.replace("/publisher");
+        router.rush("/publisher");
       } else {
-        router.replace("/(tabs)");
+        router.rush("/(tabs)");
       }
     } catch (error) {
       let message = "Une erreur est survenue.";
