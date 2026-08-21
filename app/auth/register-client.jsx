@@ -13,10 +13,12 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 
-import { registerClient } from "../../services/auth";
+import { useAuth } from "../../context/AuthContext";
+import { registerClient, getUserRole } from "../../services/auth";
 
 export default function RegisterClient() {
 
+  const { setUser } = useAuth();
   const [firstName, setFirstName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -51,12 +53,9 @@ export default function RegisterClient() {
     try {
       setLoading(true);
 
-      await registerClient({
-        firstName,
-        email,
-        password,
-      });
-
+      await registerClient({firstName, email, password});
+      const profile = await getUserRole();
+      if (profile) setUser(profile);
       Alert.alert("Succès", "Compte créé avec succès.");
 
       router.replace("/(tabs)");

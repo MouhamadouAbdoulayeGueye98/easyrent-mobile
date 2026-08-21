@@ -54,7 +54,7 @@ export default function Login() {
       // 3. Redirection selon le rôle
       const userRole = profile?.role || response?.user?.role;
 
-      if (userRole === "publisher" || userRole === "PROPRIETAIRE") {
+      if (userRole === "publisher" || userRole === "ANNONCEUR") {
         router.replace("/publisher");
       } else {
         router.replace("/(tabs)");
