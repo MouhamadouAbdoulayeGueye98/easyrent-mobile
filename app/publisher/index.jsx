@@ -1,11 +1,38 @@
+import { useState, useCallback } from "react";
 import { ScrollView, View, Text, StyleSheet } from "react-native";
-import { router } from "expo-router";
+import { router, useFocusEffect } from "expo-router";
 
 import StatCard from "../../components/publisher/StatCard";
 import QuickAction from "../../components/publisher/QuickAction";
 import ActivityCard from "../../components/publisher/ActivityCard";
+import { getConversations } from "../../services/conversations";
 
 export default function PublisherDashboard() {
+  const [messagesCount, setMessagesCount] = useState(0);
+
+  useFocusEffect(
+    useCallback(() => {
+      let isActive = true;
+
+      async function fetchStats() {
+        try {
+          const conversations = await getConversations();
+          if (isActive) {
+            setMessagesCount(conversations.length);
+          }
+        } catch (error) {
+          console.error("Erreur chargement stats messages :", error);
+        }
+      }
+
+      fetchStats();
+
+      return () => {
+        isActive = false;
+      };
+    }, [])
+  );
+
   return (
     <ScrollView
       style={styles.container}
@@ -25,7 +52,7 @@ export default function PublisherDashboard() {
 
         <StatCard
           title="Messages"
-          value="5"
+          value={messagesCount.toString()}
           icon="chatbubble"
           color="#8B5CF6"
         />
