@@ -11,6 +11,14 @@ import { router } from "expo-router";
 export default function Register() {
   return (
     <View style={styles.container}>
+      {/* Bouton flèche retour */}
+      <TouchableOpacity 
+        style={styles.backButton} 
+        onPress={() => router.back()}
+      >
+        <Ionicons name="arrow-back" size={24} color="#111827" />
+      </TouchableOpacity>
+
       <Text style={styles.title}>Créer un compte</Text>
 
       <Text style={styles.subtitle}>
@@ -75,6 +83,13 @@ const styles = StyleSheet.create({
     backgroundColor: "#F8FAFC",
     paddingHorizontal: 24,
     justifyContent: "center",
+  },
+
+  backButton: {
+    position: "absolute",
+    top: 60,
+    left: 24,
+    zIndex: 10,
   },
 
   title: {

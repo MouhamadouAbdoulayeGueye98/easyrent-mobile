@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "Deukway",
-    "slug": "deukway",
+    "name": "Easy Rent",
+    "slug": "easy rent",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/logo.png",
-    "scheme": "deukway",
+    "scheme": "easy rent",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
@@ -19,11 +19,11 @@
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
       "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "package": "com.mouhagueyesteam.deukway"
     },
     "web": {
-      "output": "static",
-      "favicon": "./assets/images/favicon.png"
+      "bundler": "metro"
     },
     "plugins": [
       "expo-router",
@@ -44,8 +44,11 @@
       "typedRoutes": true,
       "reactCompiler": true
     },
-    "web": {
-      "bundler": "metro"
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "5282bb7e-8192-4981-abe2-de25629ee928"
+      }
     }
   }
 }
