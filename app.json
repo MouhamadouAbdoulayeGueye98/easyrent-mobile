@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "Deukway",
-    "slug": "deukway",
+    "name": "EasyRent",
+    "slug": "easyrent",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/logo.png",
-    "scheme": "deukway",
+    "scheme": "easyrent",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
@@ -19,18 +19,18 @@
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
       "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "package": "com.sala0226.easyrent"
     },
     "web": {
-      "output": "static",
-      "favicon": "./assets/images/favicon.png"
+      "bundler": "metro"
     },
     "plugins": [
       "expo-router",
       [
         "expo-splash-screen",
         {
-          "image": "./assets/images/splash-icon.png",
+          "image": "./assets/images/logo.png",
           "imageWidth": 220,
           "resizeMode": "contain",
           "backgroundColor": "#2563EB",
@@ -38,14 +38,12 @@
             "backgroundColor": "#000000"
           }
         }
-      ]
+      ],
+      "@react-native-community/datetimepicker"
     ],
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
-    },
-    "web": {
-      "bundler": "metro"
     }
   }
 }

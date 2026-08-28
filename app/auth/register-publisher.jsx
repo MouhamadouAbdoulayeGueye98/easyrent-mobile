@@ -10,7 +10,6 @@ import FormInput from "../../components/forms/FormInput";
 import FormButton from "../../components/forms/FormButton";
 import FormSection from "../../components/forms/FormSection";
 import SelectInput from "../../components/forms/SelectInput";
-
 import { useAuth } from "../../context/AuthContext";
 import { registerPublisher, getUserRole } from "../../services/auth";
 
@@ -115,7 +114,7 @@ export default function RegisterPublisher() {
       if (profile) setUser(profile);
       Alert.alert("Succès", "Compte annonceur créé.");
 
-      router.replace("/publisher");
+      router.replace("/(tabs)");
     } catch (error) {
       Alert.alert("Erreur", error.message);
     } finally {
