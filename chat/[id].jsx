@@ -11,9 +11,9 @@ import { Ionicons } from "@expo/vector-icons";
 import { useCallback, useRef, useState } from "react";
 import { useLocalSearchParams, useFocusEffect } from "expo-router";
 
-import Header from "../../components/common/Header";
-import { useAuth } from "../../context/AuthContext";
-import { getMessages, sendMessage as sendMessageApi } from "../../services/conversations";
+import Header from "../components/common/Header";
+import { useAuth } from "../context/AuthContext";
+import { getMessages, sendMessage as sendMessageApi } from "../services/conversations";
 
 export default function Chat() {
   const { id } = useLocalSearchParams();

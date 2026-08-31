@@ -1,14 +1,14 @@
 import { Stack } from "expo-router";
-
+import { ListingProvider } from "../../context/ListingContext";
 
 export default function PublisherCreateLayout() {
-
   return (
-    <Stack
-      screenOptions={{
-        headerShown:false,
-      }}
-    />
+    <ListingProvider>
+      <Stack
+        screenOptions={{
+          headerShown: false,
+        }}
+      />
+    </ListingProvider>
   );
-
 }

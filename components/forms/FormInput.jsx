@@ -10,6 +10,7 @@ export default function FormInput({
   placeholder,
   value,
   onChangeText,
+  placeholderTextColor = "#9CA3AF",
   secureTextEntry = false,
   keyboardType = "default",
 }) {
@@ -23,6 +24,7 @@ export default function FormInput({
         value={value}
         onChangeText={onChangeText}
         placeholder={placeholder}
+        placeholderTextColor={placeholderTextColor}
         secureTextEntry={secureTextEntry}
         keyboardType={keyboardType}
         style={styles.input}

@@ -1,14 +1,10 @@
 export const listingTypes = [
   {
     label: "Location",
-    value: "rent",
+    value: "LOCATION",
   },
   {
     label: "Vente",
-    value: "sale",
-  },
-  {
-    label: "Colocation",
-    value: "shared",
+    value: "VENTE",
   },
 ];
