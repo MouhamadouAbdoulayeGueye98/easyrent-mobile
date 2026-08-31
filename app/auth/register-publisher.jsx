@@ -10,8 +10,8 @@ import FormInput from "../../components/forms/FormInput";
 import FormButton from "../../components/forms/FormButton";
 import FormSection from "../../components/forms/FormSection";
 import SelectInput from "../../components/forms/SelectInput";
-
-import { registerPublisher } from "../../services/auth";
+import { useAuth } from "../../context/AuthContext";
+import { registerPublisher, getUserRole } from "../../services/auth";
 
 const publisherOptions = [
   {
@@ -36,6 +36,7 @@ const publisherOptions = [
 ];
 
 export default function RegisterPublisher() {
+  const { setUser } = useAuth();
   const [form, setForm] = useState({
     firstName: "",
     lastName: "",
@@ -107,24 +108,13 @@ export default function RegisterPublisher() {
     try {
       setLoading(true);
 
-      await registerPublisher({
-        firstName,
-        lastName,
-
-        phone,
-
-        email,
-
-        city,
-
-        publisherType,
-
-        password,
+      await registerPublisher({firstName, lastName, phone, email, city, publisherType, password,
       });
-
+      const profile = await getUserRole();
+      if (profile) setUser(profile);
       Alert.alert("Succès", "Compte annonceur créé.");
 
-      router.replace("/publisher");
+      router.replace("/(tabs)");
     } catch (error) {
       Alert.alert("Erreur", error.message);
     } finally {

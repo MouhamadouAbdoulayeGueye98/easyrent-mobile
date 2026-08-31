@@ -54,7 +54,7 @@ export default function Login() {
       // 3. Redirection selon le rôle
       const userRole = profile?.role || response?.user?.role;
 
-      if (userRole === "ANNONCEUR") {
+      if (userRole === "publisher" || userRole === "ANNONCEUR") {
         router.replace("/publisher");
       } else if (userRole === "ADMIN") {
         // Pour l'instant, on peut garder une redirection temporaire

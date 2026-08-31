@@ -1,98 +1,67 @@
-import {
-  View,
-  FlatList,
-  StyleSheet,
-} from "react-native";
-
+import { useState, useCallback } from "react";
+import { View, FlatList, StyleSheet } from "react-native";
+import { router, useFocusEffect } from "expo-router";
 import Header from "../../components/common/Header";
 import RequestCard from "../../components/publisher/RequestCard";
+import { getVisits } from "../../services/visits";
 
+export default function ClientRequests() {
+  const [requests, setRequests] = useState([]);
 
-const requests = [
-  {
-    id:"1",
-    user:"Moussa Ndiaye",
-    property:"Appartement F4 Almadies",
-    date:"Samedi 27 Juillet",
-    time:"15:30",
-    message:"Je souhaite visiter le logement.",
-    status:"pending",
-  },
+  useFocusEffect(
+    useCallback(() => {
+      let isActive = true;
 
-  {
-    id:"2",
-    user:"Fatou Diop",
-    property:"Studio moderne Ouakam",
-    date:"Lundi 29 Juillet",
-    time:"10:00",
-    message:"Le logement est-il toujours disponible ?",
-    status:"accepted",
-  },
-];
+      async function fetchClientRequests() {
+        try {
+          const data = await getVisits();
+          if (isActive && data) {
+            setRequests(data);
+          }
+        } catch (error) {
+          console.error("Erreur chargement visites client :", error);
+        }
+      }
 
+      fetchClientRequests();
 
-export default function Requests(){
-
-
-  return (
-
-    <View style={styles.container}>
-
-      <Header
-        title="Demandes de visite"
-      />
-
-
-      <FlatList
-
-        data={requests}
-
-        keyExtractor={(item)=>item.id}
-
-        renderItem={({item})=>(
-
-          <RequestCard
-
-            request={item}
-
-            onAccept={()=>
-              console.log("Acceptée",item.id)
-            }
-
-            onReject={()=>
-              console.log("Refusée",item.id)
-            }
-
-          />
-
-        )}
-
-        contentContainerStyle={styles.list}
-
-        showsVerticalScrollIndicator={false}
-
-      />
-
-
-    </View>
-
+      return () => {
+        isActive = false;
+      };
+    }, [])
   );
 
+  return (
+    <View style={styles.container}>
+      <Header
+        title="Mes visites"
+        showBack={true}
+        onBackPress={() => router.back()}
+      />
+
+      <FlatList
+        data={requests}
+        keyExtractor={(item) => item.id?.toString() || Math.random().toString()}
+        renderItem={({ item }) => (
+          <RequestCard
+            request={item}
+            hideActions={true}
+          />
+        )}
+        contentContainerStyle={styles.list}
+        showsVerticalScrollIndicator={false}
+      />
+    </View>
+  );
 }
 
-
-
 const styles = StyleSheet.create({
-
-  container:{
-    flex:1,
-    backgroundColor:"#F8FAFC",
+  container: {
+    flex: 1,
+    backgroundColor: "#F8FAFC",
   },
-
-
-  list:{
-    padding:20,
-    paddingBottom:40,
+  list: {
+    padding: 20,
+    paddingBottom: 40,
   },
-
 });

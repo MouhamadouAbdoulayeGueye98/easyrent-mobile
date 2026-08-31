@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "Easy Rent",
-    "slug": "easy rent",
+    "name": "Deukway",
+    "slug": "deukway",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/logo.png",
-    "scheme": "easy rent",
+    "scheme": "deukway",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
@@ -19,8 +19,7 @@
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
       "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false,
-      "package": "com.mouhagueyesteam.deukway"
+      "predictiveBackGestureEnabled": false
     },
     "web": {
       "bundler": "metro"
@@ -30,7 +29,7 @@
       [
         "expo-splash-screen",
         {
-          "image": "./assets/images/splash-icon.png",
+          "image": "./assets/images/logo.png",
           "imageWidth": 220,
           "resizeMode": "contain",
           "backgroundColor": "#2563EB",
@@ -38,17 +37,15 @@
             "backgroundColor": "#000000"
           }
         }
-      ]
+      ],
+      "@react-native-community/datetimepicker"
     ],
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
     },
-    "extra": {
-      "router": {},
-      "eas": {
-        "projectId": "5282bb7e-8192-4981-abe2-de25629ee928"
-      }
+    "web": {
+      "bundler": "metro"
     }
   }
 }
