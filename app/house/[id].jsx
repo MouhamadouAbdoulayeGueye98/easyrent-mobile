@@ -55,7 +55,7 @@ export default function HouseDetail() {
       return () => {
         isActive = false;
       };
-    }, [id])
+    }, [id]),
   );
 
   const onViewRef = useRef(({ viewableItems }) => {
@@ -76,7 +76,7 @@ export default function HouseDetail() {
     setIsModalVisible(true);
   }
 
- async function handleSendVisitRequest({ dateTime, phone }) {
+  async function handleSendVisitRequest({ dateTime, phone }) {
     try {
       await createVisit({
         propertyId: house?.id,
@@ -86,7 +86,9 @@ export default function HouseDetail() {
       setSuccessModalVisible(true);
     } catch (error) {
       console.error("Erreur création visite :", error);
-      const message = error.response?.data?.message || "Impossible d'envoyer la demande de visite.";
+      const message =
+        error.response?.data?.message ||
+        "Impossible d'envoyer la demande de visite.";
       Alert.alert("Erreur", message);
     }
   }
@@ -104,7 +106,8 @@ export default function HouseDetail() {
       router.push(`/chat/${conversation.id}`);
     } catch (error) {
       console.error("Erreur création conversation :", error);
-      const message = error.response?.data?.message || "Impossible de contacter l'annonceur.";
+      const message =
+        error.response?.data?.message || "Impossible de contacter l'annonceur.";
       Alert.alert("Erreur", message);
     } finally {
       setContacting(false);
@@ -138,7 +141,7 @@ export default function HouseDetail() {
     petsAllowed: "Animaux acceptés",
   };
   const activeEquipments = Object.entries(equipmentLabels).filter(
-    ([key]) => house[key]
+    ([key]) => house[key],
   );
 
   return (
@@ -157,7 +160,10 @@ export default function HouseDetail() {
             showsHorizontalScrollIndicator={false}
             keyExtractor={(item) => item.id}
             renderItem={({ item }) => (
-              <Image source={{ uri: item.url }} style={[styles.image, { width }]} />
+              <Image
+                source={{ uri: item.url }}
+                style={[styles.image, { width }]}
+              />
             )}
             onViewableItemsChanged={onViewRef}
             viewabilityConfig={viewConfigRef}
@@ -179,7 +185,10 @@ export default function HouseDetail() {
 
       {/* Retour & Favoris */}
       <View style={styles.headerButtons}>
-        <TouchableOpacity style={styles.circleButton} onPress={() => router.back()}>
+        <TouchableOpacity
+          style={styles.circleButton}
+          onPress={() => router.back()}
+        >
           <Ionicons name="arrow-back" size={24} color="#111827" />
         </TouchableOpacity>
 
@@ -206,7 +215,8 @@ export default function HouseDetail() {
         <Text style={styles.title}>{house.title}</Text>
 
         <Text style={styles.location}>
-          📍 {house.quartier ? `${house.quartier}, ` : ""}{house.city}
+          📍 {house.quartier ? `${house.quartier}, ` : ""}
+          {house.city}
         </Text>
 
         <Text style={styles.price}>
@@ -265,7 +275,9 @@ export default function HouseDetail() {
       <View style={styles.bottomBar}>
         <View>
           <Text style={styles.bottomPriceLabel}>Prix</Text>
-          <Text style={styles.bottomPrice}>{house.price.toLocaleString()} FCFA</Text>
+          <Text style={styles.bottomPrice}>
+            {house.price.toLocaleString()} FCFA
+          </Text>
         </View>
 
         <View style={styles.bottomActions}>
@@ -281,7 +293,10 @@ export default function HouseDetail() {
             )}
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.reserveButton} onPress={handleReservation}>
+          <TouchableOpacity
+            style={styles.reserveButton}
+            onPress={handleReservation}
+          >
             <Text style={styles.reserveText}>Réserver</Text>
           </TouchableOpacity>
         </View>
@@ -341,11 +356,20 @@ const styles = StyleSheet.create({
   },
   content: { padding: 20 },
   verifiedRow: { flexDirection: "row", alignItems: "center" },
-  verifiedText: { marginLeft: 6, color: "#10B981", fontWeight: "600", fontSize: 13 },
+  verifiedText: {
+    marginLeft: 6,
+    color: "#10B981",
+    fontWeight: "600",
+    fontSize: 13,
+  },
   title: { fontSize: 28, fontWeight: "bold", marginTop: 12 },
   location: { color: "#6B7280", marginTop: 8 },
   price: { fontSize: 26, color: "#2563EB", fontWeight: "bold", marginTop: 15 },
-  infoRow: { flexDirection: "row", justifyContent: "space-between", marginTop: 25 },
+  infoRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginTop: 25,
+  },
   infoBox: { alignItems: "center" },
   section: { fontSize: 22, fontWeight: "700", marginTop: 30, marginBottom: 10 },
   description: { color: "#4B5563", lineHeight: 24 },

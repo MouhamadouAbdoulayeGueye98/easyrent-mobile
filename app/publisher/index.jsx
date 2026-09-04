@@ -1,16 +1,24 @@
 import { useState, useCallback } from "react";
-import { ScrollView, View, Text, StyleSheet, TouchableOpacity } from "react-native";
+import {
+  ScrollView,
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+} from "react-native";
 import { router, useFocusEffect } from "expo-router";
 
 import StatCard from "../../components/publisher/StatCard";
 import QuickAction from "../../components/publisher/QuickAction";
 import ActivityCard from "../../components/publisher/ActivityCard";
 import { getConversations } from "../../services/conversations";
+import { getMyProperties } from "../../services/propertyService";
 import { getVisits } from "../../services/visits";
 
 export default function PublisherDashboard() {
   const [messagesCount, setMessagesCount] = useState(0);
   const [requestsCount, setRequestsCount] = useState(0);
+  const [propertiesCount, setPropertiesCount] = useState(0);
   const [recentVisits, setRecentVisits] = useState([]);
   const [recentMessages, setRecentMessages] = useState([]);
 
@@ -20,16 +28,17 @@ export default function PublisherDashboard() {
 
       async function fetchStats() {
         try {
-          const [conversations, visits] = await Promise.all([
+          const [conversations, visits, properties] = await Promise.all([
             getConversations().catch(() => []),
             getVisits().catch(() => []),
+            getMyProperties().catch(() => []),
           ]);
 
           if (isActive) {
             setMessagesCount(conversations.length);
             setRequestsCount(visits.length);
-            
-   
+            setPropertiesCount(properties.length);
+
             setRecentVisits(visits.slice(0, 2));
             setRecentMessages(conversations.slice(0, 2));
           }
@@ -43,7 +52,7 @@ export default function PublisherDashboard() {
       return () => {
         isActive = false;
       };
-    }, [])
+    }, []),
   );
 
   return (
@@ -58,13 +67,19 @@ export default function PublisherDashboard() {
       <Text style={styles.sectionTitle}>Vos statistiques</Text>
 
       <View style={styles.statsContainer}>
-        <StatCard title="Annonces" value="12" icon="home" color="#2563EB" />
+        <StatCard
+          title="Annonces"
+          value={propertiesCount.toString()}
+          icon="home"
+          color="#2563EB"
+          onPress={() => router.push("/publisher/listing")}
+        />
 
-        <StatCard 
-          title="Demandes" 
-          value={requestsCount.toString()} 
-          icon="calendar" 
-          color="#10B981" 
+        <StatCard
+          title="Demandes"
+          value={requestsCount.toString()}
+          icon="calendar"
+          color="#10B981"
           onPress={() => router.push("/publisher/requests")}
         />
 
@@ -73,6 +88,7 @@ export default function PublisherDashboard() {
           value={messagesCount.toString()}
           icon="chatbubble"
           color="#8B5CF6"
+          onPress={() => router.push("/publisher/messages")}
         />
 
         <StatCard title="Vues" value="245" icon="eye" color="#F59E0B" />
@@ -120,7 +136,11 @@ export default function PublisherDashboard() {
             icon="calendar"
             color="#10B981"
             title="Nouvelle demande de visite"
-            subtitle={visit.property?.title || visit.propertyTitle || "Logement concerné"}
+            subtitle={
+              visit.property?.title ||
+              visit.propertyTitle ||
+              "Logement concerné"
+            }
             onPress={() => router.push("/publisher/requests")}
           />
         ))
@@ -141,7 +161,9 @@ export default function PublisherDashboard() {
             icon="chatbubble"
             color="#8B5CF6"
             title="Nouveau message"
-            subtitle={msg.lastMessage || msg.content || "Un client vous a contacté."}
+            subtitle={
+              msg.lastMessage || msg.content || "Un client vous a contacté."
+            }
             onPress={() => router.push("/publisher/messages")}
           />
         ))
