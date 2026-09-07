@@ -164,6 +164,7 @@ export default function PublisherDashboard() {
             subtitle={
               msg.lastMessage || msg.content || "Un client vous a contacté."
             }
+            
             onPress={() => router.push("/publisher/messages")}
           />
         ))
