@@ -54,10 +54,10 @@ export default function Login() {
       // 3. Redirection selon le rôle
       const userRole = profile?.role || response?.user?.role;
 
-      if (userRole === "publisher" || userRole === "PROPRIETAIRE") {
-        router.rush("/publisher");
+      if (userRole === "publisher" || userRole === "ANNONCEUR") {
+        router.replace("/publisher");
       } else {
-        router.rush("/(tabs)");
+        router.replace("/(tabs)");
       }
     } catch (error) {
       console.error("Erreur de connexion :", error);
@@ -117,8 +117,7 @@ export default function Login() {
         </TouchableOpacity>
       </View>
 
-       <TouchableOpacity onPress={() => router.push("/auth/forgot-password")}
-      >
+      <TouchableOpacity onPress={() => router.push("/auth/forgot-password")}>
         <Text style={styles.forgot}>Mot de passe oublié ?</Text>
       </TouchableOpacity>
 

@@ -18,6 +18,8 @@ import { useAuth } from "../../context/AuthContext";
 import { useFavorites } from "../../context/FavoritesContext";
 import { startConversation } from "../../services/conversations";
 import { getPropertyById } from "../../services/properties";
+import { createVisit } from "../../services/visits";
+import VisitModal from "../../components/common/VisitModal";
 
 export default function HouseDetail() {
   const { id } = useLocalSearchParams();
@@ -29,6 +31,8 @@ export default function HouseDetail() {
   const [loading, setLoading] = useState(true);
   const [currentImage, setCurrentImage] = useState(0);
   const [contacting, setContacting] = useState(false);
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [successModalVisible, setSuccessModalVisible] = useState(false);
 
   const isFavorite = favorites.includes(house?.id);
 
@@ -69,7 +73,22 @@ export default function HouseDetail() {
       router.push("/auth/login");
       return;
     }
-    console.log("Réservation pour :", house.title);
+    setIsModalVisible(true);
+  }
+
+ async function handleSendVisitRequest({ dateTime, phone }) {
+    try {
+      await createVisit({
+        propertyId: house?.id,
+        date: dateTime,
+      });
+
+      setSuccessModalVisible(true);
+    } catch (error) {
+      console.error("Erreur création visite :", error);
+      const message = error.response?.data?.message || "Impossible d'envoyer la demande de visite.";
+      Alert.alert("Erreur", message);
+    }
   }
 
   async function handleContact() {
@@ -267,6 +286,14 @@ export default function HouseDetail() {
           </TouchableOpacity>
         </View>
       </View>
+
+      {/* Modal de réservation */}
+      <VisitModal
+        visible={isModalVisible}
+        onClose={() => setIsModalVisible(false)}
+        onSubmit={handleSendVisitRequest}
+        propertyTitle={house?.title || "Logement"}
+      />
     </ScrollView>
   );
 }
