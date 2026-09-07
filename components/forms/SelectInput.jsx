@@ -1,8 +1,8 @@
 import {
-  View,
+  StyleSheet,
   Text,
   TouchableOpacity,
-  StyleSheet,
+  View,
 } from "react-native";
 
 import { Ionicons } from "@expo/vector-icons";
@@ -82,7 +82,7 @@ const styles = StyleSheet.create({
 
   label: {
     marginBottom: 8,
-    fontSize: 15,
+    fontSize: 17,
     fontWeight: "600",
     color: "#111827",
   },

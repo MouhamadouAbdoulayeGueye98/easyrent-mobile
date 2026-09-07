@@ -1,13 +1,14 @@
 import { useState } from "react";
 
 import {
-  Text,
-  StyleSheet,
-  TextInput,
-  TouchableOpacity,
-  ScrollView,
   ActivityIndicator,
   Alert,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from "react-native";
 
 import { Ionicons } from "@expo/vector-icons";
@@ -94,8 +95,11 @@ export default function RegisterClient() {
       <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
         <Ionicons name="arrow-back" size={24} color="#0a0a0b" />
       </TouchableOpacity>
-
-      <Text style={styles.title}>Inscription Client</Text>
+      
+      <View style={styles.headerRow}>
+        <Ionicons name="person-add-outline" size={26} color="#2563EB" style={styles.headerIcon} />
+        <Text style={styles.title}>Inscription Client</Text>
+      </View>
 
       <Text style={styles.subtitle}>
         Créez votre compte pour trouver votre futur logement.
@@ -177,18 +181,28 @@ const styles = StyleSheet.create({
     marginBottom: 25,
   },
 
+   headerRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 8,
+  },
+
   title: {
-    fontSize: 30,
-    fontWeight: "700",
-    color: "#111827",
+    fontSize: 28,
+    fontWeight: "800",
+    color: "#0F172A",
+    letterSpacing: -1,
+    marginLeft: 6,
   },
 
   subtitle: {
     marginTop: 8,
-    marginBottom: 30,
-    color: "#6B7280",
-    fontSize: 16,
-    lineHeight: 24,
+    marginBottom: 32,
+    color: "#64748B",
+    fontSize: 15,
+    lineHeight: 22,
+    fontWeight: "400",
   },
 
   input: {
@@ -196,7 +210,9 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     paddingHorizontal: 18,
     paddingVertical: 16,
-    fontSize: 16,
+    fontSize: 15,
+    fontWeight: "500",
+    color: "#0F172A",
     marginBottom: 18,
     borderWidth: 1,
     borderColor: "#E5E7EB",
@@ -213,18 +229,30 @@ const styles = StyleSheet.create({
   buttonText: {
     color: "#FFFFFF",
     fontWeight: "700",
-    fontSize: 17,
+    fontSize: 16,
+    letterSpacing: 0.3,
   },
 
   loginText: {
-    marginTop: 25,
+    marginTop: 28,
     textAlign: "center",
-    color: "#6B7280",
-    fontSize: 15,
+    color: "#64748B",
+    fontSize: 14,
+    lineHeight: 20,
   },
 
   loginLink: {
     color: "#2563EB",
     fontWeight: "700",
   },
+
+  iconContainer: {
+  width: 72,
+  height: 72,
+  borderRadius: 36,
+  backgroundColor: "#EFF6FF", // bleu très clair, cohérent avec votre #2563EB
+  alignItems: "center",
+  justifyContent: "center",
+  marginBottom: 20,
+},
 });

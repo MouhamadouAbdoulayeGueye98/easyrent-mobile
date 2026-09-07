@@ -1,8 +1,8 @@
 import {
-  View,
+  StyleSheet,
   Text,
   TextInput,
-  StyleSheet,
+  View,
 } from "react-native";
 
 export default function FormInput({
@@ -37,7 +37,7 @@ const styles = StyleSheet.create({
   },
 
   label: {
-    fontSize: 15,
+    fontSize: 17,
     fontWeight: "600",
     marginBottom: 8,
     color: "#111827",

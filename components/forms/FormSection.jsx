@@ -1,7 +1,7 @@
 import {
-  View,
-  Text,
   StyleSheet,
+  Text,
+  View,
 } from "react-native";
 
 export default function FormSection({
@@ -25,7 +25,7 @@ const styles = StyleSheet.create({
   },
 
   title: {
-    fontSize: 20,
+    fontSize: 17,
     fontWeight: "700",
     color: "#111827",
     marginBottom: 20,

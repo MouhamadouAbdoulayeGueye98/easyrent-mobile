@@ -1,13 +1,13 @@
 import { useState } from "react";
 
-import { ScrollView, StyleSheet, Alert } from "react-native";
+import { Alert, ScrollView, StyleSheet } from "react-native";
 
 import { router } from "expo-router";
 
 import Header from "../../components/common/Header";
 
-import FormInput from "../../components/forms/FormInput";
 import FormButton from "../../components/forms/FormButton";
+import FormInput from "../../components/forms/FormInput";
 import FormSection from "../../components/forms/FormSection";
 import SelectInput from "../../components/forms/SelectInput";
 
