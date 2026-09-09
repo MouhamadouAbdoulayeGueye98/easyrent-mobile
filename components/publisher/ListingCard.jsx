@@ -4,72 +4,103 @@ import {
   Image,
   TouchableOpacity,
   StyleSheet,
+  Alert,
 } from "react-native";
 
 import { Ionicons } from "@expo/vector-icons";
+import { router } from "expo-router";
 
-export default function ListingCard({ listing }) {
+import { deleteProperty } from "../../services/propertyService";
+
+export default function ListingCard({ listing, onDeleted }) {
+  const imageUrl = listing.photos?.length > 0 ? listing.photos[0].url : null;
+
+  function handleEdit() {
+    router.push(`/publisher/edit/${listing.id}`);
+  }
+
+  async function handleDelete() {
+    Alert.alert(
+      "Supprimer l'annonce",
+      "Voulez-vous vraiment supprimer cette annonce ? Cette action est irréversible.",
+      [
+        {
+          text: "Annuler",
+          style: "cancel",
+        },
+        {
+          text: "Supprimer",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              await deleteProperty(listing.id);
+
+              Alert.alert(
+                "Annonce supprimée",
+                "L'annonce a été supprimée avec succès.",
+              );
+
+              // On demande au parent de rafraîchir la liste
+              if (onDeleted) {
+                onDeleted(listing.id);
+              }
+            } catch (error) {
+              console.error(
+                "Erreur suppression annonce :",
+                error.response?.data || error,
+              );
+
+              Alert.alert("Erreur", "Impossible de supprimer cette annonce.");
+            }
+          },
+        },
+      ],
+    );
+  }
+
   return (
     <View style={styles.card}>
-      <Image
-        source={listing.image}
-        style={styles.image}
-      />
+      {imageUrl ? (
+        <Image source={{ uri: imageUrl }} style={styles.image} />
+      ) : (
+        <View style={styles.imagePlaceholder}>
+          <Ionicons name="image-outline" size={50} color="#9CA3AF" />
+          <Text style={styles.placeholderText}>Aucune photo</Text>
+        </View>
+      )}
 
       <View style={styles.content}>
-        <Text style={styles.title}>
-          {listing.title}
-        </Text>
+        <Text style={styles.title}>{listing.title}</Text>
 
-        <Text style={styles.location}>
-          📍 {listing.city}
-        </Text>
+        <Text style={styles.location}>📍 {listing.city}</Text>
 
         <Text style={styles.price}>
-          {listing.price.toLocaleString()} FCFA
+          {Number(listing.price).toLocaleString()} FCFA
         </Text>
 
         <View style={styles.stats}>
           <View style={styles.item}>
-            <Ionicons
-              name="eye-outline"
-              size={18}
-              color="#6B7280"
-            />
-            <Text>{listing.views}</Text>
+            <Ionicons name="eye-outline" size={18} color="#6B7280" />
+            <Text>{listing.views ?? 0}</Text>
           </View>
 
           <View style={styles.item}>
-            <Ionicons
-              name="calendar-outline"
-              size={18}
-              color="#6B7280"
-            />
-            <Text>{listing.requests}</Text>
+            <Ionicons name="calendar-outline" size={18} color="#6B7280" />
+            <Text>{listing.requests ?? 0}</Text>
           </View>
         </View>
 
         <View style={styles.buttons}>
-          <TouchableOpacity style={styles.editButton}>
-            <Ionicons
-              name="create-outline"
-              size={18}
-              color="#FFFFFF"
-            />
-            <Text style={styles.buttonText}>
-              Modifier
-            </Text>
+          <TouchableOpacity style={styles.editButton} onPress={handleEdit}>
+            <Ionicons name="create-outline" size={18} color="#FFFFFF" />
+
+            <Text style={styles.buttonText}>Modifier</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.deleteButton}>
-            <Ionicons
-              name="trash-outline"
-              size={18}
-              color="#FFFFFF"
-            />
-            <Text style={styles.buttonText}>
-              Supprimer
-            </Text>
+          <TouchableOpacity style={styles.deleteButton} onPress={handleDelete}>
+            <Ionicons name="trash-outline" size={18} color="#FFFFFF" />
+
+            <Text style={styles.buttonText}>Supprimer</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -89,6 +120,20 @@ const styles = StyleSheet.create({
   image: {
     width: "100%",
     height: 180,
+  },
+
+  imagePlaceholder: {
+    width: "100%",
+    height: 180,
+    backgroundColor: "#E5E7EB",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+
+  placeholderText: {
+    marginTop: 8,
+    color: "#9CA3AF",
+    fontSize: 14,
   },
 
   content: {

@@ -56,6 +56,9 @@ export default function Login() {
 
       if (userRole === "publisher" || userRole === "ANNONCEUR") {
         router.replace("/publisher");
+      } else if (userRole === "ADMIN") {
+        // Pour l'instant, on peut garder une redirection temporaire
+        router.replace("/(tabs)");
       } else {
         router.replace("/(tabs)");
       }

@@ -2,6 +2,7 @@ import {
   View,
   Text,
   StyleSheet,
+  Platform,
 } from "react-native";
 
 import { Picker } from "@react-native-picker/picker";
@@ -15,7 +16,6 @@ export default function PickerInput({
 }) {
   return (
     <View style={styles.container}>
-
       {label && (
         <Text style={styles.label}>
           {label}
@@ -24,11 +24,13 @@ export default function PickerInput({
 
       <View style={styles.pickerContainer}>
         <Picker
-          selectedValue={value}
-          onValueChange={onValueChange}
+          selectedValue={value || ""}
+          onValueChange={(itemValue) => {
+            onValueChange(itemValue);
+          }}
+          mode="dropdown"
           style={styles.picker}
         >
-
           <Picker.Item
             label={placeholder}
             value=""
@@ -41,17 +43,13 @@ export default function PickerInput({
               value={item.value}
             />
           ))}
-
         </Picker>
       </View>
-
     </View>
   );
 }
 
-
 const styles = StyleSheet.create({
-
   container: {
     marginBottom: 18,
   },
@@ -64,16 +62,17 @@ const styles = StyleSheet.create({
   },
 
   pickerContainer: {
+    height: 55,
     backgroundColor: "#FFFFFF",
     borderRadius: 14,
     borderWidth: 1,
     borderColor: "#E5E7EB",
     overflow: "hidden",
+    justifyContent: "center",
   },
 
   picker: {
     height: 55,
     width: "100%",
   },
-
 });

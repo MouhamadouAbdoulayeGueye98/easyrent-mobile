@@ -1,36 +1,81 @@
-import { View, FlatList, StyleSheet } from "react-native";
-import { router } from "expo-router";
+import {
+  View,
+  FlatList,
+  StyleSheet,
+  ActivityIndicator,
+  Text,
+  RefreshControl,
+} from "react-native";
+import { useCallback, useState } from "react";
+import { useFocusEffect } from "expo-router";
 
 import Header from "../../components/common/Header";
 import ListingCard from "../../components/publisher/ListingCard";
 import EmptyListings from "../../components/publisher/EmptyListings";
 
-const listings = [
-  {
-    id: "1",
-    title: "Appartement F4",
-    city: "Dakar",
-    price: 450000,
-    views: 245,
-    requests: 12,
-    image: require("../../assets/images/image1.jpg"),
-  },
-  {
-    id: "2",
-    title: "Studio moderne",
-    city: "Ouakam",
-    price: 180000,
-    views: 98,
-    requests: 4,
-    image: require("../../assets/images/image2.jpg"),
-  },
-];
+import { getMyProperties } from "../../services/propertyService";
 
 export default function Listings() {
+  const [listings, setListings] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [error, setError] = useState(null);
+
+  const loadListings = async () => {
+    try {
+      setError(null);
+
+      const data = await getMyProperties();
+
+      setListings(data);
+    } catch (error) {
+      console.error("Erreur chargement mes annonces :", error);
+
+      setError("Impossible de charger vos annonces.");
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  };
+
+  useFocusEffect(
+    useCallback(() => {
+      loadListings();
+    }, [])
+  );
+
+  const onRefresh = () => {
+    setRefreshing(true);
+    loadListings();
+  };
+
+  if (loading) {
+    return (
+      <View style={styles.center}>
+        <ActivityIndicator size="large" />
+        <Text style={styles.loadingText}>
+          Chargement de vos annonces...
+        </Text>
+      </View>
+    );
+  }
+
+  if (error) {
+    return (
+      <View style={styles.container}>
+        <Header title="Mes annonces" />
+
+        <View style={styles.center}>
+          <Text style={styles.errorText}>{error}</Text>
+        </View>
+      </View>
+    );
+  }
+
   if (listings.length === 0) {
     return (
       <EmptyListings
-        onPress={() => router.push("/publisher/create")}
+        onPress={() => router.push("/publisher-create")}
       />
     );
   }
@@ -38,15 +83,21 @@ export default function Listings() {
   return (
     <View style={styles.container}>
       <Header title="Mes annonces" />
-
+      
       <FlatList
         data={listings}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item) => item.id.toString()}
         renderItem={({ item }) => (
           <ListingCard listing={item} />
         )}
         contentContainerStyle={styles.list}
         showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+          />
+        }
       />
     </View>
   );
@@ -61,5 +112,24 @@ const styles = StyleSheet.create({
   list: {
     padding: 20,
     paddingBottom: 40,
+  },
+
+  center: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#F8FAFC",
+    padding: 20,
+  },
+
+  loadingText: {
+    marginTop: 12,
+    color: "#64748B",
+  },
+
+  errorText: {
+    color: "#EF4444",
+    textAlign: "center",
+    fontSize: 16,
   },
 });

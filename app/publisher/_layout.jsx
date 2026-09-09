@@ -66,21 +66,6 @@ export default function PublisherLayout() {
       />
 
       <Tabs.Screen
-        name="create"
-        options={{
-          title: "Ajouter",
-
-          tabBarIcon: ({ size, focused }) => (
-            <Ionicons
-              name={focused ? "add-circle" : "add-circle-outline"}
-              size={size}
-              color={focused ? "#F59E0B" : "#FCD34D"}
-            />
-          ),
-        }}
-      />
-
-      <Tabs.Screen
         name="messages"
         options={{
           title: "Messages",
@@ -107,6 +92,13 @@ export default function PublisherLayout() {
               color={focused ? "#0EA5E9" : "#7DD3FC"}
             />
           ),
+        }}
+      />
+
+      <Tabs.Screen
+        name="edit/[id]"
+        options={{
+          href: null,
         }}
       />
     </Tabs>

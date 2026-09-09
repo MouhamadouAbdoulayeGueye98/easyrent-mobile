@@ -1,34 +1,18 @@
 export const propertyTypes = [
   {
-    label: "Appartement",
-    value: "apartment",
-  },
-  {
-    label: "Maison",
-    value: "house",
+    label: "Chambre",
+    value: "CHAMBRE",
   },
   {
     label: "Studio",
-    value: "studio",
+    value: "STUDIO",
   },
   {
-    label: "Villa",
-    value: "villa",
+    label: "Colocation",
+    value: "COLOCATION",
   },
   {
-    label: "Chambre",
-    value: "room",
-  },
-  {
-    label: "Terrain",
-    value: "land",
-  },
-  {
-    label: "Bureau",
-    value: "office",
-  },
-  {
-    label: "Local commercial",
-    value: "commercial",
+    label: "Appartement",
+    value: "APPARTEMENT",
   },
 ];

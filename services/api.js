@@ -1,7 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 
-const API_URL = 'https://easyrent-back-end.onrender.com';
+const API_URL = 'http://192.168.1.12:3000';
 
 export const api = axios.create({
   baseURL: API_URL,

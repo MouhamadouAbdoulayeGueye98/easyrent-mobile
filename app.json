@@ -4,13 +4,15 @@
     "slug": "easyrent",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/logo.png",
+    "icon": "./assets/images/easyrent-icon-1024.png",
     "scheme": "easyrent",
     "userInterfaceStyle": "automatic",
-    "newArchEnabled": true,
+    
+
     "ios": {
       "supportsTablet": true
     },
+
     "android": {
       "adaptiveIcon": {
         "backgroundColor": "#2563EB",
@@ -22,11 +24,13 @@
       "predictiveBackGestureEnabled": false,
       "package": "com.sala0226.easyrent"
     },
+
     "web": {
       "output": "static",
       "favicon": "./assets/images/favicon.png",
       "bundler": "metro"
     },
+
     "plugins": [
       "expo-router",
       [
@@ -43,6 +47,7 @@
       ],
       "@react-native-community/datetimepicker"
     ],
+
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
