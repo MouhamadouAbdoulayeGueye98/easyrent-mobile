@@ -32,18 +32,12 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: "#FFFFFF",
     marginHorizontal: 20,
-    marginTop: -20, // Chevauche légèrement la bannière
+    marginTop: 20, // Chevauche légèrement la bannière
     paddingHorizontal: 16,
     height: 56,
     borderRadius: 16,
     elevation: 5,
-    shadowColor: "#000",
-    shadowOpacity: 0.08,
-    shadowRadius: 8,
-    shadowOffset: {
-      width: 0,
-      height: 4,
-    },
+    boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.08)",
   },
 
   input: {
