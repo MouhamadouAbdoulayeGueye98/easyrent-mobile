@@ -72,7 +72,7 @@ export default function PublisherDashboard() {
           value={propertiesCount.toString()}
           icon="home"
           color="#2563EB"
-          onPress={() => router.push("/publisher/listing")}
+          onPress={() => router.push("/publisher/listings")}
         />
 
         <StatCard
