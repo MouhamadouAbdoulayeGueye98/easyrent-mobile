@@ -114,7 +114,7 @@ export default function RegisterPublisher() {
       if (profile) setUser(profile);
       Alert.alert("Succès", "Compte annonceur créé.");
 
-      router.replace("/(tabs)");
+      router.replace("/publisher");
     } catch (error) {
       Alert.alert("Erreur", error.message);
     } finally {
