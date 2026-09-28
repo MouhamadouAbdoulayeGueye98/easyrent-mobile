@@ -1,18 +1,18 @@
 import { useState } from "react";
 import {
-  ActivityIndicator,
-  Alert,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
+    ActivityIndicator,
+    Alert,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
 } from "react-native";
 
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 
-import { resetPassword } from "../../services/auth";
+import { forgotPassword } from "../../services/auth";
 
 export default function ForgotPassword() {
   const [email, setEmail] = useState("");
@@ -26,7 +26,7 @@ export default function ForgotPassword() {
     if (!formattedEmail) {
       Alert.alert(
         "Adresse email requise",
-        "Veuillez saisir votre adresse email."
+        "Veuillez saisir votre adresse email.",
       );
       return;
     }
@@ -35,13 +35,13 @@ export default function ForgotPassword() {
       setLoading(true);
 
       // Appels à la fonction d'authentification
-      await resetPassword(formattedEmail);
+      await forgotPassword(formattedEmail);
 
       setSent(true);
 
       Alert.alert(
         "Enregistré avec succès",
-        `Un e-mail de réinitialisation de mot de passe a été envoyé à l'adresse ${formattedEmail}.`
+        `Un e-mail de réinitialisation de mot de passe a été envoyé à l'adresse ${formattedEmail}.`,
       );
     } catch (error) {
       console.error("Erreur lors de la réinitialisation:", error);
@@ -75,10 +75,7 @@ export default function ForgotPassword() {
 
   return (
     <View style={styles.container}>
-      <TouchableOpacity
-        style={styles.backButton}
-        onPress={() => router.back()}
-      >
+      <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
         <Ionicons name="arrow-back" size={24} color="#111827" />
       </TouchableOpacity>
 

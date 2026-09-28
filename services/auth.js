@@ -66,8 +66,13 @@ export async function logout() {
   await AsyncStorage.removeItem('access_token');
 }
 
+// =========================
+// MOT DE PASSE OUBLIÉ
+// =========================
+export async function forgotPassword(email) {
+  const response = await api.post("/auth/forgot-password", {
+    email,
+  });
 
-export async function resetPassword(email) {
-  const response = await api.post('/auth/forgot-password', { email });
   return response.data;
 }
