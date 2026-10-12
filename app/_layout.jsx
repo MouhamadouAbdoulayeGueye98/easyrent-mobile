@@ -1,10 +1,13 @@
-  import { Stack } from "expo-router";
+import { Stack } from "expo-router";
+import { Provider } from "react-redux";
+import {store}  from "../store/store"; 
 
-  import { FavoritesProvider } from "../context/FavoritesContext";
-  import { AuthProvider } from "../context/AuthContext";
+import { FavoritesProvider } from "../context/FavoritesContext";
+import { AuthProvider } from "../context/AuthContext";
 
-  export default function RootLayout() {
-    return (
+export default function RootLayout() {
+  return (
+    <Provider store={store}>
       <AuthProvider>
         <FavoritesProvider>
           <Stack
@@ -14,5 +17,6 @@
           />
         </FavoritesProvider>
       </AuthProvider>
-    );
-  }
+    </Provider>
+  );
+}

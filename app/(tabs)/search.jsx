@@ -1,11 +1,27 @@
-import React from 'react';
+import React, { useState, useMemo } from 'react';
 import { View, Text, FlatList, ActivityIndicator, StyleSheet } from 'react-native';
 import ScreenHeader from "../../components/common/ScreenHeader";
 import SearchBar from "../../components/home/SearchBar";
 import HouseCard from "../../components/home/HouseCard";
-import useProperties from '../../hooks/useProperties';
+
+import { useGetPropertiesQuery } from '../../services/api';
+
 export default function Search() {
-  const { filteredProperties, loading, searchQuery, setSearchQuery } = useProperties();
+  const [searchQuery, setSearchQuery] = useState("");
+  
+  // Utilisation du hook RTK Query centralisé
+  const { data: properties = [], isLoading: loading, error } = useGetPropertiesQuery();
+
+  const filteredProperties = useMemo(() => {
+    if (!searchQuery.trim()) return properties;
+    const text = searchQuery.toLowerCase().trim();
+    return properties.filter(
+      (house) =>
+        house.title?.toLowerCase().includes(text) ||
+        house.city?.toLowerCase().includes(text) ||
+        house.quartier?.toLowerCase().includes(text)
+    );
+  }, [searchQuery, properties]);
 
   return (
     <View style={{ flex: 1, backgroundColor: '#f8f9fa' }}>
@@ -23,6 +39,10 @@ export default function Search() {
       <View style={styles.content}>
         {loading ? (
           <ActivityIndicator size="large" color="#000" style={{ marginTop: 20 }} />
+        ) : error ? (
+          <View style={styles.emptyContainer}>
+            <Text style={{ color: '#EF4444' }}>Erreur de chargement des annonces.</Text>
+          </View>
         ) : filteredProperties.length === 0 ? (
           <View style={styles.emptyContainer}>
             <Text style={styles.emptyText}>Aucune annonce trouvée.</Text>
@@ -30,7 +50,7 @@ export default function Search() {
         ) : (
           <FlatList
             data={filteredProperties}
-            keyExtractor={(item) => item.id.toString()}
+            keyExtractor={(item) => item.id?.toString() || Math.random().toString()}
             renderItem={({ item }) => (
               <HouseCard house={item} variant="vertical" />
             )}

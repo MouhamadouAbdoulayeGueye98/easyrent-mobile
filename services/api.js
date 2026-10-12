@@ -1,26 +1,22 @@
-import axios from 'axios';
+import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const API_URL = 'http://192.168.68.145:3000';
+// Utilise la nouvelle adresse IP de ton PC sur le réseau Wi-Fi
+const API_URL = 'http://192.168.1.55:3000';
 
-export const api = axios.create({
-  baseURL: API_URL,
-  timeout: 10000,
-  headers: {
-    'Content-Type': 'application/json',
-  },
+export const servicesApi = createApi({
+  reducerPath: 'servicesApi',
+  baseQuery: fetchBaseQuery({
+    baseUrl: API_URL,
+    prepareHeaders: async (headers) => {
+      const token = await AsyncStorage.getItem('access_token');
+      if (token) {
+        headers.set('authorization', `Bearer ${token}`);
+      }
+      return headers;
+    },
+  }),
+  endpoints: (builder) => ({
+    // ... tes endpoints (login, register, getProperties, createProperty, etc.)
+  }),
 });
-
-// Intercepteur pour ajouter automatiquement le token JWT à chaque requête sécurisée
-api.interceptors.request.use(
-  async (config) => {
-    const token = await AsyncStorage.getItem('access_token');
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-  },
-  (error) => {
-    return Promise.reject(error);
-  }
-);

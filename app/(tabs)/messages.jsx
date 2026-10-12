@@ -1,43 +1,25 @@
-import { useCallback, useState } from "react";
-import { FlatList, StyleSheet, View, ActivityIndicator, Text } from "react-native";
-import { useFocusEffect } from "expo-router";
+import { View, StyleSheet, ActivityIndicator, Text } from "react-native";
+import { FlatList } from "react-native";
 
 import Header from "../../components/common/Header";
 import { useAuth } from "../../context/AuthContext";
 import GuestScreen from "../../components/common/GuestScreen";
-import { getConversations } from "../../services/conversations";
 import ConversationCard from "../../components/messages/ConversationCard";
+
+import { useGetConversationsQuery } from "../../services/api";
 
 export default function Messages() {
   const { user } = useAuth();
-  const [conversations, setConversations] = useState([]);
-  const [loading, setLoading] = useState(true);
 
-  useFocusEffect(
-    useCallback(() => {
-      if (!user) return;
-      let isActive = true;
-
-      async function load() {
-        try {
-          const data = await getConversations();
-          if (isActive) setConversations(data);
-        } catch (error) {
-          console.error("Erreur chargement conversations :", error);
-        } finally {
-          if (isActive) setLoading(false);
-        }
-      }
-
-      load();
-      const interval = setInterval(load, 8000); // polling simple
-
-      return () => {
-        isActive = false;
-        clearInterval(interval);
-      };
-    }, [user])
-  );
+  // Utilisation de RTK Query avec un polling toutes les 8 secondes si l'utilisateur est connecté
+  const { 
+    data: conversations = [], 
+    isLoading: loading, 
+    error 
+  } = useGetConversationsQuery(undefined, {
+    skip: !user, // Ne fait la requête que si l'utilisateur est connecté
+    pollingInterval: 8000,
+  });
 
   if (!user) {
     return (
@@ -50,6 +32,10 @@ export default function Messages() {
         />
       </View>
     );
+  }
+
+  if (error) {
+    console.error("Erreur chargement conversations :", error);
   }
 
   return (

@@ -17,16 +17,22 @@ import FormSection from "../../components/forms/FormSection";
 import FormButton from "../../components/forms/FormButton";
 import { useListing } from "../../context/ListingContext";
 
-import {
-  createProperty,
-  uploadPropertyPhoto,
-} from "../../services/propertyService";
+// Import des mutations RTK Query depuis le fichier central
+import { 
+  useCreatePropertyMutation, 
+  useUploadPhotoMutation 
+} from "../../services/api";
 
 export default function Photos() {
   const { listing, resetListing } = useListing();
 
   const [images, setImages] = useState([]);
-  const [loading, setLoading] = useState(false);
+  
+  // Déclaration des mutations RTK Query
+  const [createProperty, { isLoading: isCreating }] = useCreatePropertyMutation();
+  const [uploadPhoto, { isLoading: isUploading }] = useUploadPhotoMutation();
+
+  const loading = isCreating || isUploading;
 
   async function pickImages() {
     const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -56,9 +62,7 @@ export default function Photos() {
 
   async function handlePublish() {
     try {
-      setLoading(true);
-
-      // Vérifications
+      // Vérifications de base
       if (!listing.title || !listing.description) {
         Alert.alert(
           "Informations manquantes",
@@ -88,41 +92,32 @@ export default function Photos() {
         return;
       }
 
-      // 1. Création de l'annonce
-      const property = await createProperty({
+      // 1. Création de l'annonce via RTK Query
+      const propertyData = {
         title: listing.title,
         description: listing.description,
-
         region: listing.region || undefined,
         address: listing.address,
         city: listing.city,
         quartier: listing.district || undefined,
-
         type: listing.propertyType,
         listingType: listing.listingType || undefined,
-
         price: Number(listing.price),
-
         surface: listing.area ? Number(listing.area) : undefined,
-
         rooms: Number(listing.bedrooms),
-
         bathrooms: Number(listing.bathrooms),
-
         charges: listing.charges ? Number(listing.charges) : undefined,
-
         deposit: listing.deposit ? Number(listing.deposit) : undefined,
-
         availability: listing.availability || undefined,
-
         furnished: listing.furnished,
-      });
+      };
 
+      const property = await createProperty(propertyData).unwrap();
       console.log("Annonce créée :", property);
 
       // 2. Upload des photos
       for (const image of images) {
-        await uploadPropertyPhoto(property.id, image);
+        await uploadPhoto({ propertyId: property.id, image }).unwrap();
       }
 
       console.log("Toutes les photos ont été envoyées.");
@@ -131,7 +126,7 @@ export default function Photos() {
       resetListing();
       setImages([]);
 
-      // 4. Message puis retour dashboard
+      // 4. Message de succès puis redirection vers le dashboard
       Alert.alert("Annonce publiée", "Votre logement a été créé avec succès.", [
         {
           text: "OK",
@@ -141,14 +136,12 @@ export default function Photos() {
         },
       ]);
     } catch (error) {
-      console.error("Erreur création annonce :", error.response?.data || error);
+      console.error("Erreur création annonce :", error?.data || error);
 
       Alert.alert(
         "Erreur",
-        error.response?.data?.message || "Impossible de publier l'annonce.",
+        error?.data?.message || "Impossible de publier l'annonce.",
       );
-    } finally {
-      setLoading(false);
     }
   }
 
@@ -196,12 +189,10 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#F8FAFC",
   },
-
   content: {
     padding: 20,
     paddingBottom: 40,
   },
-
   addButton: {
     height: 120,
     borderWidth: 2,
@@ -211,20 +202,17 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
-
   addText: {
     color: "#2563EB",
     fontSize: 16,
     fontWeight: "700",
   },
-
   gallery: {
     flexDirection: "row",
     flexWrap: "wrap",
     marginTop: 20,
     gap: 10,
   },
-
   image: {
     width: 100,
     height: 100,

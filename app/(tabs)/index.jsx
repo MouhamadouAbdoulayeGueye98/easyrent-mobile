@@ -1,8 +1,7 @@
 import { ScrollView, ActivityIndicator, View, Text } from "react-native";
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { useFocusEffect } from "expo-router";
+import { useMemo, useState } from "react";
 
-import { getProperties } from "../../services/properties";
+import { useGetPropertiesQuery } from "../../services/api";
 
 import HeroSection from "../../components/home/HeroSection";
 import SearchBar from "../../components/home/SearchBar";
@@ -13,30 +12,9 @@ import NewSection from "../../components/home/NewSection";
 export default function Home() {
   const [search, setSearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("Tous");
-  const [houses, setHouses] = useState([]);
-  const [loading, setLoading] = useState(true);
 
-  useFocusEffect(
-    useCallback(() => {
-      let isActive = true;
-
-      async function load() {
-        try {
-          const data = await getProperties();
-          if (isActive) setHouses(data);
-        } catch (error) {
-          console.error("Erreur chargement annonces :", error);
-        } finally {
-          if (isActive) setLoading(false);
-        }
-      }
-
-      load();
-      return () => {
-        isActive = false;
-      };
-    }, [])
-  );
+  // Utilisation directe du hook RTK Query (gère le chargement et les données automatiquement)
+  const { data: houses = [], isLoading, error } = useGetPropertiesQuery();
 
   const filteredHouses = useMemo(() => {
     let result = houses;
@@ -45,8 +23,8 @@ export default function Home() {
       const text = search.toLowerCase().trim();
       result = result.filter(
         (house) =>
-          house.title.toLowerCase().includes(text) ||
-          house.city.toLowerCase().includes(text) ||
+          house.title?.toLowerCase().includes(text) ||
+          house.city?.toLowerCase().includes(text) ||
           house.quartier?.toLowerCase().includes(text)
       );
     }
@@ -58,10 +36,18 @@ export default function Home() {
     return result;
   }, [search, selectedCategory, houses]);
 
-  if (loading) {
+  if (isLoading) {
     return (
       <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
         <ActivityIndicator size="large" color="#2563EB" />
+      </View>
+    );
+  }
+
+  if (error) {
+    return (
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center", padding: 20 }}>
+        <Text style={{ color: "#EF4444", textAlign: "center" }}>Erreur lors du chargement des annonces.</Text>
       </View>
     );
   }

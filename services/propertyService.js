@@ -1,41 +1,63 @@
-import { api } from "./api";
+const BASE_URL = "http://192.168.68.155:3000";
+
+// Helper interne pour factoriser les appels fetch
+async function request(endpoint, options = {}) {
+  const url = `${BASE_URL}${endpoint}`;
+  const headers = { ...options.headers };
+
+  if (!(options.body instanceof FormData)) {
+    headers["Content-Type"] = "application/json";
+  }
+
+  const response = await fetch(url, { ...options, headers });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.message || `Erreur HTTP ${response.status}`);
+  }
+
+  const text = await response.text();
+  return text ? JSON.parse(text) : null;
+}
 
 export async function getProperties(filters = {}) {
-  const response = await api.get("/properties", {
-    params: filters,
-  });
-
-  return response.data;
+  const queryParams = new URLSearchParams(filters).toString();
+  const endpoint = `/properties${queryParams ? `?${queryParams}` : ""}`;
+  return await request(endpoint, { method: "GET" });
 }
 
 export async function getMyProperties() {
-  const response = await api.get("/properties/my");
-  return response.data;
+  return await request("/properties/my", { method: "GET" });
 }
 
 export async function getPropertyById(id) {
-  const response = await api.get(`/properties/${id}`);
-  return response.data;
+  return await request(`/properties/${id}`, { method: "GET" });
 }
 
 export async function createProperty(data) {
-  const response = await api.post("/properties", data);
-  return response.data;
+  return await request("/properties", {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
 }
 
 export async function updateProperty(id, data) {
-  const response = await api.patch(`/properties/${id}`, data);
-  return response.data;
+  return await request(`/properties/${id}`, {
+    method: "PATCH",
+    body: JSON.stringify(data),
+  });
 }
 
 export async function deleteProperty(id) {
-  const response = await api.delete(`/properties/${id}`);
-  return response.data;
+  return await request(`/properties/${id}`, {
+    method: "DELETE",
+  });
 }
 
 export async function deletePropertyPhoto(photoId) {
-  const response = await api.delete(`/properties/photos/${photoId}`);
-  return response.data;
+  return await request(`/properties/photos/${photoId}`, {
+    method: "DELETE",
+  });
 }
 
 export async function uploadPropertyPhoto(propertyId, image) {
@@ -47,15 +69,8 @@ export async function uploadPropertyPhoto(propertyId, image) {
     type: image.mimeType || "image/jpeg",
   });
 
-  const response = await api.post(
-    `/properties/${propertyId}/photos`,
-    formData,
-    {
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
-    }
-  );
-
-  return response.data;
+  return await request(`/properties/${propertyId}/photos`, {
+    method: "POST",
+    body: formData,
+  });
 }

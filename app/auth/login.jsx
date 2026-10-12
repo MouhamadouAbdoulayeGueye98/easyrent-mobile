@@ -12,72 +12,75 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { z } from "zod"; // 1. Importation de Zod
 
-import { login, getUserRole } from "../../services/auth";
-import { useAuth } from "../../context/AuthContext";
+import { useLoginMutation } from "../../services/api";   
+import { useAuth } from "../../context/AuthContext";       
+
+// 3. Définition du schéma de validation avec Zod
+const loginSchema = z.object({
+  email: z.string().email("Veuillez entrer une adresse email valide."),
+  password: z.string().min(6, "Le mot de passe doit contenir au moins 6 caractères."),
+});
 
 export default function Login() {
   const { setUser } = useAuth();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
+  // 4. Récupération du hook RTK Query
+  const [loginMutation, { isLoading }] = useLoginMutation();
+
   async function handleLogin() {
-    if (!email || !password) {
-      Alert.alert(
-        "Champs obligatoires",
-        "Veuillez remplir tous les champs."
-      );
+    // 5. Validation des données avec Zod avant d'envoyer la requête
+    const validationResult = loginSchema.safeParse({ email, password });
+
+    if (!validationResult.success) {
+      // S'il y a des erreurs, on récupère le premier message d'erreur de Zod
+      const errorMessage = validationResult.error.errors[0].message;
+      Alert.alert("Champ invalide", errorMessage);
       return;
     }
 
     try {
-      setLoading(true);
+      // 6. Connexion via RTK Query avec .unwrap()
+      const response = await loginMutation({ email, password }).unwrap();
 
-      // 1. Connexion via le backend NestJS
-      const response = await login(email, password);
-
-      // CORRECTION CRUCIALE : Stocker le nouveau token pour écraser l'ancien
       if (response && response.access_token) {
         await AsyncStorage.setItem('access_token', response.access_token);
       }
 
-      // 2. Récupération du profil utilisateur complet
+      // 7. Récupération du profil utilisateur complet
       const profile = await getUserRole();
 
       if (profile) {
         setUser(profile);
       }
 
-      // 3. Redirection selon le rôle
+      // 8. Redirection selon le rôle
       const userRole = profile?.role || response?.user?.role;
 
       if (userRole === "publisher" || userRole === "ANNONCEUR") {
         router.replace("/publisher");
-      } else if (userRole === "ADMIN") {
-        // Pour l'instant, on peut garder une redirection temporaire
-        router.replace("/(tabs)");
       } else {
         router.replace("/(tabs)");
       }
     } catch (error) {
       console.error("Erreur de connexion :", error);
-      const serverMessage = error.response?.data?.message;
+      // Récupération propre de l'erreur renvoyée par RTK Query
+      const serverMessage = error.data?.message;
       const message = Array.isArray(serverMessage)
         ? serverMessage[0]
         : serverMessage || "Email ou mot de passe incorrect.";
 
       Alert.alert("Connexion", message);
-    } finally {
-      setLoading(false);
     }
   }
 
   return (
     <View style={styles.container}>
-      {/* Bouton flèche retour */}
       <TouchableOpacity 
         style={styles.backButton} 
         onPress={() => router.back()}
@@ -86,9 +89,7 @@ export default function Login() {
       </TouchableOpacity>
 
       <Text style={styles.logo}>🏠</Text>
-
       <Text style={styles.title}>Bon retour</Text>
-
       <Text style={styles.subtitle}>Connectez-vous à votre compte</Text>
 
       <TextInput
@@ -127,9 +128,9 @@ export default function Login() {
       <TouchableOpacity
         style={styles.button}
         onPress={handleLogin}
-        disabled={loading}
+        disabled={isLoading}
       >
-        {loading ? (
+        {isLoading ? (
           <ActivityIndicator color="#FFFFFF" />
         ) : (
           <Text style={styles.buttonText}>Se connecter</Text>

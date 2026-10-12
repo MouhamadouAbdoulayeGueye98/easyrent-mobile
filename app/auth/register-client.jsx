@@ -1,5 +1,4 @@
 import { useState } from "react";
-
 import {
   Text,
   StyleSheet,
@@ -12,78 +11,75 @@ import {
 
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
+import { z } from "zod";  
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-import { useAuth } from "../../context/AuthContext";
-import { registerClient, getUserRole } from "../../services/auth";
+import { useRegisterMutation } from "../../services/api"; 
+import { useAuth } from "../../context/AuthContext";       
+
+// 3. Définition du schéma Zod pour l'inscription avec vérification des mots de passe
+const registerSchema = z.object({
+  firstName: z.string().min(2, "Le prénom doit contenir au moins 2 caractères."),
+  email: z.string().email("Veuillez entrer une adresse email valide."),
+  password: z.string().min(6, "Le mot de passe doit contenir au moins 6 caractères."),
+  confirmPassword: z.string(),
+}).refine((data) => data.password === data.confirmPassword, {
+  message: "Les mots de passe ne correspondent pas.",
+  path: ["confirmPassword"],
+});
 
 export default function RegisterClient() {
-
   const { setUser } = useAuth();
+  
   const [firstName, setFirstName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
 
-  const [loading, setLoading] = useState(false);
+  // 4. Récupération de la mutation d'inscription de RTK Query
+  const [registerMutation, { isLoading }] = useRegisterMutation();
 
   async function handleRegister() {
-    if (
-      !firstName ||
-      !email ||
-      !password ||
-      !confirmPassword
-    ) {
-      Alert.alert("Erreur", "Veuillez remplir tous les champs.");
-      return;
-    }
+    // 5. Validation des données avec Zod
+    const validationResult = registerSchema.safeParse({
+      firstName,
+      email,
+      password,
+      confirmPassword,
+    });
 
-    if (password !== confirmPassword) {
-      Alert.alert("Erreur", "Les mots de passe ne correspondent pas.");
-      return;
-    }
-
-    if (password.length < 6) {
-      Alert.alert(
-        "Erreur",
-        "Le mot de passe doit contenir au moins 6 caractères.",
-      );
+    if (!validationResult.success) {
+      const errorMessage = validationResult.error.errors[0].message;
+      Alert.alert("Erreur de validation", errorMessage);
       return;
     }
 
     try {
-      setLoading(true);
+      // 6. Appel de la mutation RTK Query
+      const response = await registerMutation({ firstName, email, password }).unwrap();
 
-      await registerClient({firstName, email, password});
-      const profile = await getUserRole();
-      if (profile) setUser(profile);
-      Alert.alert("Succès", "Compte créé avec succès.");
-
-      router.replace("/(tabs)");
-    } catch (error) {
-      let message = "Une erreur est survenue.";
-
-      switch (error.code) {
-        case "auth/email-already-in-use":
-          message = "Cette adresse email est déjà utilisée.";
-          break;
-
-        case "auth/invalid-email":
-          message = "Adresse email invalide.";
-          break;
-
-        case "auth/weak-password":
-          message = "Le mot de passe est trop faible.";
-          break;
-
-        default:
-          message = error.message;
+      // Si l'inscription renvoie directement un token ou connecte l'utilisateur
+      if (response && response.access_token) {
+        await AsyncStorage.setItem('access_token', response.access_token);
       }
 
+      // 7. Récupération du profil
+      const profile = await getUserRole();
+      if (profile) setUser(profile);
+
+      Alert.alert("Succès", "Compte créé avec succès.");
+      router.replace("/(tabs)");
+    } catch (error) {
+      console.error("Erreur d'inscription :", error);
+      const serverMessage = error.data?.message;
+      const message = Array.isArray(serverMessage)
+        ? serverMessage[0]
+        : serverMessage || "Une erreur est survenue lors de l'inscription.";
+
       Alert.alert("Erreur", message);
-    } finally {
-      setLoading(false);
     }
   }
+
   return (
     <ScrollView
       style={styles.container}
@@ -95,11 +91,9 @@ export default function RegisterClient() {
       </TouchableOpacity>
 
       <Text style={styles.title}>Inscription Client</Text>
-
       <Text style={styles.subtitle}>
         Créez votre compte pour trouver votre futur logement.
       </Text>
-
 
       <TextInput
         placeholder="Prénom"
@@ -108,7 +102,6 @@ export default function RegisterClient() {
         onChangeText={setFirstName}
         style={styles.input}
       />
-
 
       <TextInput
         placeholder="Email"
@@ -141,9 +134,9 @@ export default function RegisterClient() {
       <TouchableOpacity
         style={styles.button}
         onPress={handleRegister}
-        disabled={loading}
+        disabled={isLoading}
       >
-        {loading ? (
+        {isLoading ? (
           <ActivityIndicator color="#FFFFFF" />
         ) : (
           <Text style={styles.buttonText}>Créer mon compte</Text>
@@ -165,23 +158,19 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#F8FAFC",
   },
-
   content: {
     padding: 25,
     paddingTop: 60,
     paddingBottom: 40,
   },
-
   backButton: {
     marginBottom: 25,
   },
-
   title: {
     fontSize: 30,
     fontWeight: "700",
     color: "#111827",
   },
-
   subtitle: {
     marginTop: 8,
     marginBottom: 30,
@@ -189,7 +178,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     lineHeight: 24,
   },
-
   input: {
     backgroundColor: "#FFFFFF",
     borderRadius: 14,
@@ -200,7 +188,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#E5E7EB",
   },
-
   button: {
     backgroundColor: "#2563EB",
     borderRadius: 14,
@@ -208,20 +195,17 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginTop: 10,
   },
-
   buttonText: {
     color: "#FFFFFF",
     fontWeight: "700",
     fontSize: 17,
   },
-
   loginText: {
     marginTop: 25,
     textAlign: "center",
     color: "#6B7280",
     fontSize: 15,
   },
-
   loginLink: {
     color: "#2563EB",
     fontWeight: "700",
