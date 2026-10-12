@@ -25,7 +25,7 @@ export default function HouseDetail() {
   const { id } = useLocalSearchParams();
   const { user } = useAuth();
   const { width } = Dimensions.get("window");
-  const { favorites, toggleFavorite } = useFavorites();
+  const { favorites, toggleFavorite, loadFavorites } = useFavorites();
 
   const [house, setHouse] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -42,6 +42,9 @@ export default function HouseDetail() {
 
       async function load() {
         try {
+          if (user) {
+            await loadFavorites();
+          }
           const data = await getPropertyById(id);
           if (isActive) setHouse(data);
         } catch (error) {
@@ -55,7 +58,7 @@ export default function HouseDetail() {
       return () => {
         isActive = false;
       };
-    }, [id]),
+    }, [id, user, loadFavorites]),
   );
 
   const onViewRef = useRef(({ viewableItems }) => {

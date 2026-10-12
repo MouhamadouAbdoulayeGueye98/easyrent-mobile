@@ -1,5 +1,5 @@
 import { ScrollView, StyleSheet } from "react-native";
-import { router } from "expo-router"; 
+import { router } from "expo-router";
 
 import Header from "../../components/common/Header";
 import { useAuth } from "../../context/AuthContext";
@@ -13,7 +13,7 @@ export default function Profile() {
   async function handleLogout() {
     await logout();
     // router.replace("(tabs)");
-  } 
+  }
 
   if (!user) {
     return (
@@ -33,33 +33,39 @@ export default function Profile() {
 
       <ProfileHeader />
 
-      <ProfileMenuItem 
-        icon="heart" 
-        title="Mes favoris" 
-        onPress={() => router.push("/favorites")} 
+      <ProfileMenuItem
+        icon="heart"
+        title="Mes favoris"
+        onPress={() => router.push("/favorites")}
       />
 
-      <ProfileMenuItem 
-        icon="calendar" 
-        title="Mes visites" 
-        onPress={() => router.push("/requests")} 
+      <ProfileMenuItem
+        icon="calendar"
+        title="Mes visites"
+        onPress={() => router.push("/requests")}
       />
 
-      <ProfileMenuItem 
-        icon="chatbubble" 
-        title="Mes messages" 
-        onPress={() => router.push("/messages")} 
+      <ProfileMenuItem
+        icon="chatbubble"
+        title="Mes messages"
+        onPress={() => router.push("/messages")}
       />
 
-      <ProfileMenuItem 
-        icon="settings" 
-        title="Paramètres" 
-        onPress={() => router.push("/settings")} 
+      <ProfileMenuItem
+        icon="settings"
+        title="Paramètres"
+        onPress={() => router.push("/settings")}
       />
 
-      <ProfileMenuItem 
-        icon="help-circle" 
-        title="Aide" 
+      <ProfileMenuItem
+        icon="notifications"
+        title="Mes notifications"
+        onPress={() => router.push("/notifications")}
+      />
+
+      <ProfileMenuItem
+        icon="help-circle"
+        title="Aide"
       />
 
       <ProfileMenuItem

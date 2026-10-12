@@ -3,6 +3,9 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useFocusEffect } from "expo-router";
 
 import { getProperties } from "../../services/properties";
+import { getNotifications } from "../../services/notifications";
+import { useAuth } from "../../context/AuthContext";
+import { useFavorites } from "../../context/FavoritesContext";
 
 import HeroSection from "../../components/home/HeroSection";
 import SearchBar from "../../components/home/SearchBar";
@@ -11,32 +14,58 @@ import PopularSection from "../../components/home/PopularSection";
 import NewSection from "../../components/home/NewSection";
 
 export default function Home() {
+  const { user } = useAuth();
+  const { loadFavorites } = useFavorites();
   const [search, setSearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("Tous");
   const [houses, setHouses] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [unreadCount, setUnreadCount] = useState(0);
 
   useFocusEffect(
-    useCallback(() => {
-      let isActive = true;
+  useCallback(() => {
+    let isActive = true;
 
-      async function load() {
-        try {
-          const data = await getProperties();
-          if (isActive) setHouses(data);
-        } catch (error) {
-          console.error("Erreur chargement annonces :", error);
-        } finally {
-          if (isActive) setLoading(false);
+    async function load() {
+      try {
+        if (user) {
+          await loadFavorites();
         }
+        const properties = await getProperties();
+
+        if (isActive) {
+          setHouses(properties);
+        }
+      } catch (error) {
+        console.error("Erreur chargement annonces :", error);
       }
 
-      load();
-      return () => {
-        isActive = false;
-      };
-    }, [])
-  );
+      try {
+        const notifications = await getNotifications();
+
+        if (isActive) {
+          const unread = notifications.filter(
+            (notification) => !notification.read
+          ).length;
+
+          setUnreadCount(unread);
+        }
+      } catch (error) {
+        console.error("Erreur chargement notifications :", error);
+      } finally {
+        if (isActive) {
+          setLoading(false);
+        }
+      }
+    }
+
+    load();
+
+    return () => {
+      isActive = false;
+    };
+  }, [user, loadFavorites])
+);
 
   const filteredHouses = useMemo(() => {
     let result = houses;
@@ -68,7 +97,7 @@ export default function Home() {
 
   return (
     <ScrollView showsVerticalScrollIndicator={false}>
-      <HeroSection />
+      <HeroSection unreadCount={unreadCount} />
 
       <SearchBar value={search} onChangeText={setSearch} />
 

@@ -1,25 +1,59 @@
-import { View, Text, StyleSheet, FlatList } from "react-native";
+import { useCallback, useState } from "react";
+import { View, Text, StyleSheet, FlatList, ActivityIndicator } from "react-native";
+import { useFocusEffect } from "expo-router";
 
-import { houses } from "../../constants/houses";
 import { useAuth } from "../../context/AuthContext";
 import Header from "../../components/common/Header";
 import HouseCard from "../../components/ui/HouseCard";
 import GuestScreen from "../../components/common/GuestScreen";
 import { useFavorites } from "../../context/FavoritesContext";
+import { getProperties } from "../../services/properties";
 
 export default function Favorites() {
   const { user } = useAuth();
-  const { favorites } = useFavorites();
-  
+  const { favorites, loadFavorites } = useFavorites();
+  const [properties, setProperties] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  const favoriteHouses = houses.filter((house) =>
-    favorites.includes(house.id)
+  useFocusEffect(
+    useCallback(() => {
+      if (!user) {
+        setProperties([]);
+        setLoading(false);
+        return;
+      }
+
+      let isActive = true;
+
+      async function load() {
+        try {
+          setLoading(true);
+          await loadFavorites();
+          const data = await getProperties();
+          if (isActive) {
+            setProperties(data);
+          }
+        } catch (error) {
+          console.error("Erreur chargement favoris :", error);
+        } finally {
+          if (isActive) setLoading(false);
+        }
+      }
+
+      load();
+      return () => {
+        isActive = false;
+      };
+    }, [user, loadFavorites])
+  );
+
+  const favoriteProperties = properties.filter((property) =>
+    favorites.includes(property.id)
   );
 
   if (!user) {
     return (
       <View style={styles.container}>
-
         <GuestScreen
           icon="heart-outline"
           title="Vos favoris vous attendent"
@@ -29,27 +63,35 @@ export default function Favorites() {
     );
   }
 
-  if (favoriteHouses.length === 0) {
+  if (loading) {
     return (
-      <View style={styles.emptyContainer}>
-        <Text style={styles.emoji}>❤️</Text>
+      <View style={styles.container}>
+        <Header title="Mes favoris" />
+        <ActivityIndicator size="large" color="#2563EB" style={{ marginTop: 40 }} />
+      </View>
+    );
+  }
 
-        <Text style={styles.title}>Aucun favori</Text>
-
-        <Text style={styles.subtitle}>
-          Ajoutez des logements à vos favoris pour les retrouver rapidement.
-        </Text>
+  if (favoriteProperties.length === 0) {
+    return (
+      <View style={styles.container}>
+        <Header title="Mes favoris" />
+        <View style={styles.emptyContainer}>
+          <Text style={styles.emoji}>❤️</Text>
+          <Text style={styles.title}>Aucun favori</Text>
+          <Text style={styles.subtitle}>
+            Ajoutez des logements à vos favoris pour les retrouver rapidement.
+          </Text>
+        </View>
       </View>
     );
   }
 
   return (
     <View style={styles.container}>
-      <Text style={styles.header}>Mes favoris</Text>
-      <Header title="Mes favoris" rightIcon="heart" />
-
+      <Header title="Mes favoris" />
       <FlatList
-        data={favoriteHouses}
+        data={favoriteProperties}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => <HouseCard house={item} variant="large" />}
         showsVerticalScrollIndicator={false}
