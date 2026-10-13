@@ -1,26 +1,40 @@
-import axios from 'axios';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import axios from "axios";
 
-const API_URL = 'http://192.168.1.24:3000';
+//const API_URL = 'https://easyrent-back-end.onrender.com';
+const API_URL = "http://192.168.1.26:3000";
 
 export const api = axios.create({
   baseURL: API_URL,
   timeout: 10000,
   headers: {
-    'Content-Type': 'application/json',
+    "Content-Type": "application/json",
   },
 });
 
-// Intercepteur pour ajouter automatiquement le token JWT à chaque requête sécurisée
 api.interceptors.request.use(
   async (config) => {
-    const token = await AsyncStorage.getItem('access_token');
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+    try {
+      const token = await AsyncStorage.getItem("access_token");
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
+    } catch (e) {
+      console.error("Erreur lecture token", e);
     }
     return config;
   },
   (error) => {
     return Promise.reject(error);
-  }
+  },
+);
+
+api.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    if (error.response && error.response.status === 401) {
+      console.log("Session expirée détectée par l'intercepteur API.");
+    }
+    return Promise.reject(error);
+  },
 );

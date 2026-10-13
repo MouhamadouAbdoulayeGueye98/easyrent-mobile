@@ -36,10 +36,7 @@
           }
         }
       ],
-      "@react-native-community/datetimepicker",
-      "expo-image",
-      "expo-web-browser",
-      "@rnmapbox/maps"
+      "@react-native-community/datetimepicker"
     ],
     "experiments": {
       "typedRoutes": true,

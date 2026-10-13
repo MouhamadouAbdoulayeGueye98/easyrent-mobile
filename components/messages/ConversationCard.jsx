@@ -3,6 +3,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 
 export default function ConversationCard({ conversation, currentUserId }) {
+  // Détermine si l'utilisateur connecté est le propriétaire du bien ou le locataire
   const isOwner = conversation.ownerId === currentUserId;
   const otherUser = isOwner ? conversation.tenant : conversation.owner;
   const lastMessage = conversation.messages?.[0];

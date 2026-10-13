@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { api } from '../services/api';
 
 export default function useProperties() {
   const [properties, setProperties] = useState([]);
@@ -6,22 +7,27 @@ export default function useProperties() {
   const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
-    // Remplacez 10.0.2.2 par l'IP de votre PC si vous êtes sur un vrai téléphone
-    fetch('http://127.0.0.1:3000/properties')
-      .then((res) => res.json())
-      .then((data) => {
-        setProperties(data);
+    const loadProperties = async () => {
+      try {
+        const response = await api.get('/properties');
+        setProperties(response.data);
+      } catch (err) {
+        console.error(
+          'Erreur lors du chargement des logements:',
+          err?.response?.data || err.message
+        );
+      } finally {
         setLoading(false);
-      })
-      .catch((err) => {
-        console.error('Erreur lors du chargement des logements:', err);
-        setLoading(false);
-      });
+      }
+    };
+
+    loadProperties();
   }, []);
 
-  const filteredProperties = properties.filter((item) =>
-    item.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    item.city?.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredProperties = properties.filter(
+    (item) =>
+      item.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      item.city?.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   return {
@@ -31,3 +37,4 @@ export default function useProperties() {
     setSearchQuery,
   };
 }
+

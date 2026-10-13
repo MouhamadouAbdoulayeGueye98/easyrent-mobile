@@ -1,39 +1,54 @@
 import { View, Text, StyleSheet, TouchableOpacity, Image } from "react-native";
 
 import { router } from "expo-router";
-import { useState } from "react";
+import { Ionicons } from "@expo/vector-icons";
+import { useFavorites } from "../../context/FavoritesContext";
 
 export default function HouseCard({ house }) {
-  const [favorite, setFavorite] = useState(false);
+  const { toggleFavorite, isFavorite } = useFavorites();
+  const favorite = isFavorite(house.id);
+
+  const photoUrl = house.photos?.[0]?.url;
 
   return (
     <TouchableOpacity
       style={styles.card}
-
       onPress={() => router.push(`/house/${house.id}`)}
     >
       <View>
-        <Image
-          source={house.image}
-
-          style={styles.image}
-        />
+        {photoUrl ? (
+          <Image
+            source={{ uri: photoUrl }}
+            style={styles.image}
+          />
+        ) : (
+          <View style={[styles.image, styles.noImage]}>
+            <Ionicons name="image-outline" size={32} color="#9CA3AF" />
+          </View>
+        )}
 
         <TouchableOpacity
           style={styles.heart}
-
-          onPress={() => setFavorite(!favorite)}
+          onPress={() => toggleFavorite(house.id)}
         >
-          <Text>{favorite ? "❤️" : "🤍"}</Text>
+          <Ionicons
+            name={favorite ? "heart" : "heart-outline"}
+            size={22}
+            color={favorite ? "#EF4444" : "#111827"}
+          />
         </TouchableOpacity>
       </View>
 
       <View style={styles.content}>
         <Text style={styles.title}>{house.title}</Text>
 
-        <Text style={styles.location}>📍 {house.location}</Text>
+        <Text style={styles.location}>
+          📍 {house.quartier ? `${house.quartier}, ` : ""}{house.city}
+        </Text>
 
-        <Text style={styles.price}>{house.price}/mois</Text>
+        <Text style={styles.price}>
+          {house.price.toLocaleString()} FCFA / mois
+        </Text>
       </View>
     </TouchableOpacity>
   );
@@ -56,6 +71,12 @@ const styles = StyleSheet.create({
     width: "100%",
 
     height: 220,
+  },
+
+  noImage: {
+    backgroundColor: "#F3F4F6",
+    justifyContent: "center",
+    alignItems: "center",
   },
 
   heart: {
