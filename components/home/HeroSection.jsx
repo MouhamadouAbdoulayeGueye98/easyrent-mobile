@@ -54,7 +54,7 @@ export default function HeroSection({ unreadCount = 0 }) {
 
 const styles = StyleSheet.create({
   hero: {
-    height: 320,
+    height: 240,
     justifyContent: "flex-end",
   },
 
@@ -113,14 +113,14 @@ const styles = StyleSheet.create({
 
   title: {
     color: "#FFFFFF",
-    fontSize: 32,
+    fontSize: 26,
     fontWeight: "700",
   },
 
   subtitle: {
     color: "#F3F4F6",
-    fontSize: 16,
-    marginTop: 12,
-    lineHeight: 22,
+    fontSize: 14,
+    marginTop: 8,
+    lineHeight: 18,
   },
 });
