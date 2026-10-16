@@ -26,6 +26,7 @@ const DAKAR = {
 
 export default function LocationScreen() {
   const { listing, updateListing } = useListing();
+  const [mapType, setMapType] = useState("standard");
 
   const [mapRegion, setMapRegion] = useState(() => ({
     ...DAKAR,
@@ -164,6 +165,19 @@ export default function LocationScreen() {
         />
       </FormSection>
 
+      <Pressable
+        style={styles.gpsButton}
+        onPress={() =>
+          setMapType((current) =>
+            current === "satellite" ? "standard" : "satellite",
+          )
+        }
+      >
+        <Text style={styles.gpsButtonText}>
+          {mapType === "satellite" ? "🗺️ Vue normale" : "🛰️ Vue satellite"}
+        </Text>
+      </Pressable>
+
       <View style={styles.locationSection}>
         <Text style={styles.sectionTitle}>Localiser le logement</Text>
 
@@ -187,15 +201,8 @@ export default function LocationScreen() {
         <View style={styles.mapContainer}>
           <MapView
             style={styles.map}
-            region={mapRegion}
+            initialRegion={mapRegion}
             onPress={(event) => selectPosition(event.nativeEvent.coordinate)}
-            onRegionChangeComplete={(region) =>
-              setMapRegion((previous) => ({
-                ...previous,
-                latitudeDelta: region.latitudeDelta,
-                longitudeDelta: region.longitudeDelta,
-              }))
-            }
           >
             {listing.latitude != null && listing.longitude != null && (
               <Marker
@@ -209,6 +216,7 @@ export default function LocationScreen() {
                 onDragEnd={(event) =>
                   selectPosition(event.nativeEvent.coordinate)
                 }
+                mapType={mapType}
               />
             )}
           </MapView>

@@ -12,14 +12,22 @@ export function AuthProvider({ children }) {
   useEffect(() => {
     async function loadStoredUser() {
       try {
-        const token = await AsyncStorage.getItem('access_token');
+        const token = await AsyncStorage.getItem("access_token");
         if (token) {
-          const response = await api.get('/auth/profile');
+          const response = await api.get("/auth/profile");
           setUser(response.data);
         }
       } catch (error) {
-        console.error('Session expirée ou invalide', error);
-        await AsyncStorage.removeItem('access_token');
+        if (error.response?.status === 401) {
+          console.warn("Session invalide : reconnexion nécessaire.");
+          await AsyncStorage.removeItem("access_token");
+          setUser(null);
+        } else {
+          console.error(
+            "Impossible de vérifier la session : réseau ou backend indisponible.",
+            error.message,
+          );
+        }
       } finally {
         setLoading(false);
       }
