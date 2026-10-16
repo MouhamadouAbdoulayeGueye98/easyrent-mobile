@@ -1,5 +1,5 @@
 import { ScrollView, ActivityIndicator, View, Text } from "react-native";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { useFocusEffect } from "expo-router";
 
 import { getProperties } from "../../services/properties";
@@ -40,22 +40,29 @@ export default function Home() {
         console.error("Erreur chargement annonces :", error);
       }
 
-      try {
-        const notifications = await getNotifications();
+      if (user) {
+        try {
+          const notifications = await getNotifications();
 
-        if (isActive) {
-          const unread = notifications.filter(
-            (notification) => !notification.read
-          ).length;
+          if (isActive) {
+            const list = Array.isArray(notifications) ? notifications : [];
 
-          setUnreadCount(unread);
+            setUnreadCount(
+              list.filter((notification) => !notification.read).length,
+            );
+          }
+        } catch (error) {
+          console.error(
+            "Erreur chargement notifications :",
+            error.response?.status || error.code || error.message,
+          );
         }
-      } catch (error) {
-        console.error("Erreur chargement notifications :", error);
-      } finally {
-        if (isActive) {
-          setLoading(false);
-        }
+      } else if (isActive) {
+        setUnreadCount(0);
+      }
+
+      if (isActive) {
+        setLoading(false);
       }
     }
 
@@ -74,9 +81,9 @@ export default function Home() {
       const text = search.toLowerCase().trim();
       result = result.filter(
         (house) =>
-          house.title.toLowerCase().includes(text) ||
-          house.city.toLowerCase().includes(text) ||
-          house.quartier?.toLowerCase().includes(text)
+          (house.title || "").toLowerCase().includes(text) ||
+          (house.city || "").toLowerCase().includes(text) ||
+          (house.quartier || "").toLowerCase().includes(text)
       );
     }
 

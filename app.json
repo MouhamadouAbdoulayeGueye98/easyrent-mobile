@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "Easy Rent",
-    "slug": "easyrent",
+    "slug": "deukway",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/easyrent-icon-1024.png",
@@ -11,6 +11,7 @@
       "supportsTablet": true
     },
     "android": {
+      "package": "com.mouhagueyesteam.deukway",
       "adaptiveIcon": {
         "backgroundColor": "#2563EB",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
@@ -41,6 +42,13 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
-    }
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "5282bb7e-8192-4981-abe2-de25629ee928"
+      }
+    },
+    "owner": "mouhagueyes-team"
   }
 }

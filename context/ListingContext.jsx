@@ -15,6 +15,8 @@ export function ListingProvider({ children }) {
     city: "",
     district: "",
     address: "",
+    latitude: null,
+    longitude: null,
 
     // Étape 3
     bedrooms: 0,
@@ -52,6 +54,8 @@ export function ListingProvider({ children }) {
       city: "",
       district: "",
       address: "",
+      latitude: null,
+      longitude: null,
       bedrooms: 0,
       bathrooms: 0,
       area: "",
