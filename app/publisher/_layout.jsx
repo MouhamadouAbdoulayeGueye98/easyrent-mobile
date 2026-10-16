@@ -13,6 +13,9 @@ export default function PublisherLayout() {
           height: 70,
           paddingBottom: 10,
           paddingTop: 10,
+          borderTopWidth: 0,
+          elevation: 8,
+          marginBottom: 15,
         },
 
         tabBarLabelStyle: {
