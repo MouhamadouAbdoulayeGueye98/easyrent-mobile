@@ -7,9 +7,7 @@ import { getNotifications } from "../../services/notifications";
 import { useAuth } from "../../context/AuthContext";
 import { useFavorites } from "../../context/FavoritesContext";
 
-import HeroSection from "../../components/home/HeroSection";
-import SearchBar from "../../components/home/SearchBar";
-import CategoryList from "../../components/home/CategoryList";
+import HomeHeader from "../../components/home/HomeHeader";
 import PopularSection from "../../components/home/PopularSection";
 import NewSection from "../../components/home/NewSection";
 
@@ -96,26 +94,30 @@ export default function Home() {
   }
 
   return (
-    <ScrollView showsVerticalScrollIndicator={false}>
-      <HeroSection unreadCount={unreadCount} />
-
-      <SearchBar value={search} onChangeText={setSearch} />
-
-      <CategoryList
+    <View style={{ flex: 1, backgroundColor: "#F9FAFB" }}>
+      <HomeHeader
+        unreadCount={unreadCount}
+        search={search}
+        onSearchChange={setSearch}
         selectedCategory={selectedCategory}
         onSelectCategory={setSelectedCategory}
       />
 
-      {filteredHouses.length === 0 ? (
-        <View style={{ padding: 40, alignItems: "center" }}>
-          <Text style={{ color: "#6B7280" }}>Aucune annonce trouvée.</Text>
-        </View>
-      ) : (
-        <>
-          <PopularSection houses={filteredHouses} />
-          <NewSection houses={filteredHouses} />
-        </>
-      )}
-    </ScrollView>
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: 90 }}
+      >
+        {filteredHouses.length === 0 ? (
+          <View style={{ padding: 40, alignItems: "center" }}>
+            <Text style={{ color: "#6B7280" }}>Aucune annonce trouvée.</Text>
+          </View>
+        ) : (
+          <>
+            <PopularSection houses={filteredHouses} />
+            <NewSection houses={filteredHouses} />
+          </>
+        )}
+      </ScrollView>
+    </View>
   );
 }
