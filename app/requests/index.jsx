@@ -36,17 +36,20 @@ export default function ClientRequests() {
       <Header
         title="Mes visites"
         showBack={true}
-        onBackPress={() => router.back()}
+        onBackPress={() => {
+          if (router.canGoBack()) {
+            router.back();
+          } else {
+            router.replace("/(tabs)");
+          }
+        }}
       />
 
       <FlatList
         data={requests}
         keyExtractor={(item) => item.id?.toString() || Math.random().toString()}
         renderItem={({ item }) => (
-          <RequestCard
-            request={item}
-            hideActions={true}
-          />
+          <RequestCard request={item} hideActions={true} />
         )}
         contentContainerStyle={styles.list}
         showsVerticalScrollIndicator={false}

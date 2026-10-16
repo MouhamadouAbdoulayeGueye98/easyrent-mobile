@@ -89,6 +89,7 @@ export default function Photos() {
       }
 
       // 1. Création de l'annonce
+      
       const property = await createProperty({
         title: listing.title,
         description: listing.description,
@@ -98,6 +99,10 @@ export default function Photos() {
         city: listing.city,
         quartier: listing.district || undefined,
 
+        // Coordonnées GPS du logement
+        latitude: listing.latitude != null ? Number(listing.latitude) : undefined,
+        longitude: listing.longitude != null ? Number(listing.longitude) : undefined,
+
         type: listing.propertyType,
         listingType: listing.listingType || undefined,
 
@@ -106,7 +111,6 @@ export default function Photos() {
         surface: listing.area ? Number(listing.area) : undefined,
 
         rooms: Number(listing.bedrooms),
-
         bathrooms: Number(listing.bathrooms),
 
         charges: listing.charges ? Number(listing.charges) : undefined,
@@ -114,9 +118,9 @@ export default function Photos() {
         deposit: listing.deposit ? Number(listing.deposit) : undefined,
 
         availability: listing.availability || undefined,
-
         furnished: listing.furnished,
       });
+
 
       console.log("Annonce créée :", property);
 

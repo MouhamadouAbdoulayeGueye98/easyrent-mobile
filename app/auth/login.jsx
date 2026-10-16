@@ -78,9 +78,9 @@ export default function Login() {
   return (
     <View style={styles.container}>
       {/* Bouton flèche retour */}
-      <TouchableOpacity 
-        style={styles.backButton} 
-        onPress={() => router.back()}
+      <TouchableOpacity
+        style={styles.backButton}
+        onPress={() => router.replace("/(tabs)")}
       >
         <Ionicons name="arrow-back" size={24} color="#111827" />
       </TouchableOpacity>

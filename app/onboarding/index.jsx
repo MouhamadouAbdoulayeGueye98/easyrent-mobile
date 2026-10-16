@@ -133,7 +133,7 @@ export default function Onboarding() {
 
       />
 
-$
+
 
       <Paginator
         data={onboardingData}

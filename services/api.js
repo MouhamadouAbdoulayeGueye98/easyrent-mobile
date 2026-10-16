@@ -1,5 +1,5 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import axios from 'axios';
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import axios from "axios";
 
 const API_URL = 'https://easyrent-back-end.onrender.com';
 //const API_URL = 'http://192.168.1.26:3000';
@@ -8,14 +8,14 @@ export const api = axios.create({
   baseURL: API_URL,
   timeout: 10000,
   headers: {
-    'Content-Type': 'application/json',
+    "Content-Type": "application/json",
   },
 });
 
 api.interceptors.request.use(
   async (config) => {
     try {
-      const token = await AsyncStorage.getItem('access_token');
+      const token = await AsyncStorage.getItem("access_token");
       if (token) {
         config.headers.Authorization = `Bearer ${token}`;
       }
@@ -26,7 +26,7 @@ api.interceptors.request.use(
   },
   (error) => {
     return Promise.reject(error);
-  }
+  },
 );
 
 api.interceptors.response.use(
@@ -36,5 +36,5 @@ api.interceptors.response.use(
       console.log("Session expirée détectée par l'intercepteur API.");
     }
     return Promise.reject(error);
-  }
+  },
 );

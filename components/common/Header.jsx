@@ -1,3 +1,4 @@
+
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
@@ -5,14 +6,28 @@ import { router } from "expo-router";
 export default function Header({
   title,
   showBack = false,
+  onBackPress,
   rightIcon,
   onRightPress,
 }) {
+  const handleBack = () => {
+    if (onBackPress) {
+      onBackPress();
+      return;
+    }
+
+    if (router.canGoBack()) {
+      router.back();
+    } else {
+      router.replace("/(tabs)");
+    }
+  };
+
   return (
     <View style={styles.container}>
       <View style={styles.left}>
         {showBack ? (
-          <TouchableOpacity onPress={() => router.back()}>
+          <TouchableOpacity onPress={handleBack}>
             <Ionicons
               name="arrow-back"
               size={24}
