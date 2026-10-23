@@ -104,6 +104,7 @@ export default function PublisherProfile() {
         color="#2563EB"
         title="Nom complet"
         subtitle={user.name || "Non renseigné"}
+        showArrow={false}
       />
 
       <ProfileMenuItem
@@ -111,6 +112,7 @@ export default function PublisherProfile() {
         color="#10B981"
         title="Téléphone"
         subtitle={user.phone || "Non renseigné"}
+        showArrow={false}
       />
 
       <ProfileMenuItem
@@ -118,6 +120,7 @@ export default function PublisherProfile() {
         color="#F59E0B"
         title="Adresse email"
         subtitle={user.email || "Non renseigné"}
+        showArrow={false}
       />
 
       <ProfileMenuItem
@@ -125,6 +128,7 @@ export default function PublisherProfile() {
         color="#8B5CF6"
         title="Ville"
         subtitle={user.city || "Non renseignée"}
+        showArrow={false}
       />
 
       <Text style={styles.sectionTitle}>Compte annonceur</Text>
@@ -134,6 +138,7 @@ export default function PublisherProfile() {
         color="#2563EB"
         title="Type d'annonceur"
         subtitle={user.publisherType || "Particulier"}
+        showArrow={false}
       />
 
       <ProfileMenuItem
@@ -141,6 +146,7 @@ export default function PublisherProfile() {
         color="#10B981"
         title="Compte vérifié"
         subtitle={user.verified ? "Vérifié" : "Non vérifié"}
+        showArrow={false}
       />
 
       <Text style={styles.sectionTitle}>Paramètres</Text>
@@ -151,17 +157,6 @@ export default function PublisherProfile() {
         title="Notifications"
       />
 
-      <ProfileMenuItem
-        icon="lock-closed-outline"
-        color="#8B5CF6"
-        title="Sécurité"
-      />
-
-      <ProfileMenuItem
-        icon="help-circle-outline"
-        color="#06B6D4"
-        title="Centre d'aide"
-      />
 
       <ProfileMenuItem
         icon="settings-outline"
@@ -175,6 +170,7 @@ export default function PublisherProfile() {
         color="#EF4444"
         title="Déconnexion"
         onPress={handleLogout}
+        showArrow={false}
       />
     </ScrollView>
   );

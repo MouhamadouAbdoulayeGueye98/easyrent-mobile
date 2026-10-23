@@ -7,38 +7,34 @@ export default function ProfileMenuItem({
   subtitle,
   color = "#2563EB",
   onPress,
+  showArrow = true,
 }) {
   return (
     <TouchableOpacity
       style={styles.container}
-      activeOpacity={0.8}
+      activeOpacity={onPress ? 0.8 : 1}
       onPress={onPress}
+      disabled={!onPress}
     >
       <View style={[styles.iconContainer, { backgroundColor: `${color}20` }]}>
-        <Ionicons
-          name={icon}
-          size={22}
-          color={color}
-        />
+        <Ionicons name={icon} size={22} color={color} />
       </View>
 
       <View style={styles.content}>
-        <Text style={styles.title}>
-          {title}
-        </Text>
+        <Text style={styles.title}>{title}</Text>
 
         {subtitle ? (
-          <Text style={styles.subtitle}>
-            {subtitle}
-          </Text>
+          <Text style={styles.subtitle}>{subtitle}</Text>
         ) : null}
       </View>
 
-      <Ionicons
-        name="chevron-forward"
-        size={22}
-        color="#9CA3AF"
-      />
+      {showArrow && (
+        <Ionicons
+          name="chevron-forward"
+          size={22}
+          color="#9CA3AF"
+        />
+      )}
     </TouchableOpacity>
   );
 }

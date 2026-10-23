@@ -18,7 +18,7 @@ export default function TabsLayout() {
           paddingTop: 10,
           borderTopWidth: 0,
           elevation: 8,
-          marginBottom: 15,
+          marginBottom: 20,
         },
       }}
     >
@@ -26,11 +26,12 @@ export default function TabsLayout() {
         name="index"
         options={{
           title: "Accueil",
+          tabBarActiveTintColor: "#10B981",
           tabBarIcon: ({ focused, size }) => (
             <Ionicons
               name={focused ? "home" : "home-outline"}
               size={size}
-              color={focused ? "#2563EB" : "#10B981"}
+              color={focused ? "#10B981" : "#10B981"}
             />
           ),
         }}
@@ -40,11 +41,12 @@ export default function TabsLayout() {
         name="map"
         options={{
           title: "Carte",
+          tabBarActiveTintColor: "#F59E0B",
           tabBarIcon: ({ focused, size }) => (
             <Ionicons
               name={focused ? "map" : "map-outline"}
               size={size}
-              color={focused ? "#2563EB" : "#F59E0B"}
+              color={focused ? "#F59E0B" : "#F59E0B"}
             />
           ),
         }}
@@ -54,11 +56,12 @@ export default function TabsLayout() {
         name="favorites"
         options={{
           title: "Favoris",
+          tabBarActiveTintColor: "#EF4444",
           tabBarIcon: ({ focused, size }) => (
             <Ionicons
               name={focused ? "heart" : "heart-outline"}
               size={size}
-              color={focused ? "#EF4444" : "#F97316"}
+              color={focused ? "#EF4444" : "#EF4444"}
             />
           ),
         }}
@@ -68,11 +71,12 @@ export default function TabsLayout() {
         name="messages"
         options={{
           title: "Messages",
+          tabBarActiveTintColor: "#8B5CF6",
           tabBarIcon: ({ focused, size }) => (
             <Ionicons
               name={focused ? "chatbubble" : "chatbubble-outline"}
               size={size}
-              color={focused ? "#2563EB" : "#8B5CF6"}
+              color={focused ? "#8B5CF6" : "#8B5CF6"}
             />
           ),
         }}
@@ -82,11 +86,12 @@ export default function TabsLayout() {
         name="profile"
         options={{
           title: "Profil",
+          tabBarActiveTintColor: "#EC4899",
           tabBarIcon: ({ focused, size }) => (
             <Ionicons
               name={focused ? "person" : "person-outline"}
               size={size}
-              color={focused ? "#2563EB" : "#EC4899"}
+              color={focused ? "#EC4899" : "#EC4899"}
             />
           ),
         }}

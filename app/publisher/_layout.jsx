@@ -15,7 +15,7 @@ export default function PublisherLayout() {
           paddingTop: 10,
           borderTopWidth: 0,
           elevation: 8,
-          marginBottom: 15,
+          marginBottom: 20,
         },
 
         tabBarLabelStyle: {
@@ -27,12 +27,12 @@ export default function PublisherLayout() {
         name="index"
         options={{
           title: "Dashboard",
-
+          tabBarActiveTintColor: "#60A5FA",
           tabBarIcon: ({ size, focused }) => (
             <Ionicons
               name={focused ? "stats-chart" : "stats-chart-outline"}
               size={size}
-              color={focused ? "#2563EB" : "#60A5FA"}
+              color={focused ? "#3f92f7" : "#60A5FA"}
             />
           ),
         }}
@@ -42,7 +42,7 @@ export default function PublisherLayout() {
         name="requests"
         options={{
           title: "Demandes",
-
+          tabBarActiveTintColor: "#C4B5FD",
           tabBarIcon: ({ size, focused }) => (
             <Ionicons
               name={focused ? "calendar" : "calendar-outline"}
@@ -57,7 +57,7 @@ export default function PublisherLayout() {
         name="listings"
         options={{
           title: "Annonces",
-
+          tabBarActiveTintColor: "#6EE7B7",
           tabBarIcon: ({ size, focused }) => (
             <Ionicons
               name={focused ? "home" : "home-outline"}
@@ -72,7 +72,7 @@ export default function PublisherLayout() {
         name="messages"
         options={{
           title: "Messages",
-
+          tabBarActiveTintColor: "#FCA5A5",
           tabBarIcon: ({ size, focused }) => (
             <Ionicons
               name={focused ? "chatbubble" : "chatbubble-outline"}
@@ -87,7 +87,7 @@ export default function PublisherLayout() {
         name="profile"
         options={{
           title: "Profil",
-
+          tabBarActiveTintColor: "#7DD3FC",
           tabBarIcon: ({ size, focused }) => (
             <Ionicons
               name={focused ? "person" : "person-outline"}
