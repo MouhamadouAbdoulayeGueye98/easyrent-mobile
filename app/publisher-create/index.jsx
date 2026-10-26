@@ -5,10 +5,10 @@ import {
   View,
   TouchableOpacity,
   Alert,
+  Platform,
 } from "react-native";
-
+import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
-import { useState } from "react";
 
 import Header from "../../components/common/Header";
 import FormButton from "../../components/forms/FormButton";
@@ -16,41 +16,55 @@ import FormInput from "../../components/forms/FormInput";
 import FormSection from "../../components/forms/FormSection";
 import { useListing } from "../../context/ListingContext";
 
+const TOTAL_STEPS = 7;
+const CURRENT_STEP = 1;
+
+const COLORS = {
+  primary: "#2563EB",
+  primarySoft: "#EFF4FF",
+  background: "#F5F7FB",
+  surface: "#FFFFFF",
+  border: "#E4E8F0",
+  text: "#0F172A",
+  muted: "#64748B",
+};
+
+const propertyTypes = [
+  { label: "Appartement", value: "APPARTEMENT", icon: "business-outline" },
+  { label: "Studio", value: "STUDIO", icon: "home-outline" },
+  { label: "Chambre", value: "CHAMBRE", icon: "bed-outline" },
+  { label: "Colocation", value: "COLOCATION", icon: "people-outline" },
+];
+
+const listingTypes = [
+  { label: "Location", value: "LOCATION", icon: "key-outline" },
+  { label: "Vente", value: "VENTE", icon: "pricetag-outline" },
+];
+
+function ProgressSteps({ hint }) {
+  return (
+    <View style={styles.progressContainer}>
+      <View style={styles.progressHeader}>
+        <Text style={styles.progressText}>
+          Étape {CURRENT_STEP} sur {TOTAL_STEPS}
+        </Text>
+        <Text style={styles.progressHint}>{hint}</Text>
+      </View>
+
+      <View style={styles.segments}>
+        {Array.from({ length: TOTAL_STEPS }).map((_, index) => (
+          <View
+            key={index}
+            style={[styles.segment, index < CURRENT_STEP && styles.segmentDone]}
+          />
+        ))}
+      </View>
+    </View>
+  );
+}
+
 export default function CreateListing() {
   const { listing, updateListing } = useListing();
-
-  const [showPropertyTypes, setShowPropertyTypes] = useState(false);
-  const [showListingTypes, setShowListingTypes] = useState(false);
-
-  const propertyTypes = [
-    {
-      label: "Appartement",
-      value: "APPARTEMENT",
-    },
-    {
-      label: "Studio",
-      value: "STUDIO",
-    },
-    {
-      label: "Chambre",
-      value: "CHAMBRE",
-    },
-    {
-      label: "Colocation",
-      value: "COLOCATION",
-    },
-  ];
-
-  const listingTypes = [
-    {
-      label: "Location",
-      value: "LOCATION",
-    },
-    {
-      label: "Vente",
-      value: "VENTE",
-    },
-  ];
 
   function handleChange(key, value) {
     console.log("CHANGE :", key, value);
@@ -65,8 +79,6 @@ export default function CreateListing() {
       propertyType: value,
     });
 
-    setShowPropertyTypes(false);
-
     console.log("TYPE LOGEMENT :", value);
   }
 
@@ -74,8 +86,6 @@ export default function CreateListing() {
     updateListing({
       listingType: value,
     });
-
-    setShowListingTypes(false);
 
     console.log("TYPE ANNONCE :", value);
   }
@@ -109,136 +119,123 @@ export default function CreateListing() {
     router.push("/publisher-create/location");
   }
 
-  const selectedProperty = propertyTypes.find(
-    (item) => item.value === listing.propertyType,
-  );
-
-  const selectedListing = listingTypes.find(
-    (item) => item.value === listing.listingType,
-  );
-
   return (
     <ScrollView
       style={styles.container}
       contentContainerStyle={styles.content}
       showsVerticalScrollIndicator={false}
+      keyboardShouldPersistTaps="handled"
     >
       <Header title="Ajouter un logement" showBack />
 
-      {/* Progression */}
-
-      <View style={styles.progressContainer}>
-        <Text style={styles.progressText}>Étape 1 sur 7</Text>
-
-        <View style={styles.progressBar}>
-          <View style={styles.progress} />
-        </View>
-      </View>
+      <ProgressSteps hint="Informations générales" />
 
       <FormSection title="Informations générales">
-        {/* Titre */}
-
+        {/* TITRE */}
         <FormInput
           label="Titre du logement"
-          placeholder="Ex: Appartement F4 aux Almadies"
+          placeholder="Ex : Appartement F4 aux Almadies"
+          placeholderTextColor="#94A3B8"
           value={listing.title}
           onChangeText={(text) => handleChange("title", text)}
         />
 
-        {/* TYPE DE LOGEMENT */}
-
-        <View style={styles.selectContainer}>
-          <Text style={styles.label}>Type de logement</Text>
-
-          <TouchableOpacity
-            style={styles.selectButton}
-            onPress={() => {
-              setShowPropertyTypes(!showPropertyTypes);
-              setShowListingTypes(false);
-            }}
-          >
-            <Text
-              style={
-                selectedProperty ? styles.selectedText : styles.placeholderText
-              }
-            >
-              {selectedProperty ? selectedProperty.label : "Choisir un type"}
-            </Text>
-
-            <Text style={styles.arrow}>{showPropertyTypes ? "▲" : "▼"}</Text>
-          </TouchableOpacity>
-
-          {showPropertyTypes && (
-            <View style={styles.optionsContainer}>
-              {propertyTypes.map((item) => (
-                <TouchableOpacity
-                  key={item.value}
-                  style={styles.option}
-                  onPress={() => selectPropertyType(item.value)}
-                >
-                  <Text style={styles.optionText}>{item.label}</Text>
-
-                  {listing.propertyType === item.value && (
-                    <Text style={styles.check}>✓</Text>
-                  )}
-                </TouchableOpacity>
-              ))}
-            </View>
-          )}
-        </View>
-
         {/* TYPE D'ANNONCE */}
-
-        <View style={styles.selectContainer}>
+        <View style={styles.group}>
           <Text style={styles.label}>Type d'annonce</Text>
 
-          <TouchableOpacity
-            style={styles.selectButton}
-            onPress={() => {
-              setShowListingTypes(!showListingTypes);
-              setShowPropertyTypes(false);
-            }}
-          >
-            <Text
-              style={
-                selectedListing ? styles.selectedText : styles.placeholderText
-              }
-            >
-              {selectedListing ? selectedListing.label : "Choisir un type"}
-            </Text>
+          <View style={styles.segmented}>
+            {listingTypes.map((item) => {
+              const active = listing.listingType === item.value;
 
-            <Text style={styles.arrow}>{showListingTypes ? "▲" : "▼"}</Text>
-          </TouchableOpacity>
-
-          {showListingTypes && (
-            <View style={styles.optionsContainer}>
-              {listingTypes.map((item) => (
+              return (
                 <TouchableOpacity
                   key={item.value}
-                  style={styles.option}
+                  style={[styles.segmentOption, active && styles.segmentActive]}
                   onPress={() => selectListingType(item.value)}
+                  activeOpacity={0.8}
+                  accessibilityRole="button"
+                  accessibilityState={{ selected: active }}
                 >
-                  <Text style={styles.optionText}>{item.label}</Text>
+                  <Ionicons
+                    name={item.icon}
+                    size={18}
+                    color={active ? "#FFFFFF" : COLORS.muted}
+                  />
+                  <Text
+                    style={[
+                      styles.segmentText,
+                      active && styles.segmentTextActive,
+                    ]}
+                  >
+                    {item.label}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+        </View>
 
-                  {listing.listingType === item.value && (
-                    <Text style={styles.check}>✓</Text>
+        {/* TYPE DE LOGEMENT */}
+        <View style={styles.group}>
+          <Text style={styles.label}>Type de logement</Text>
+
+          <View style={styles.grid}>
+            {propertyTypes.map((item) => {
+              const active = listing.propertyType === item.value;
+
+              return (
+                <TouchableOpacity
+                  key={item.value}
+                  style={[styles.tile, active && styles.tileActive]}
+                  onPress={() => selectPropertyType(item.value)}
+                  activeOpacity={0.8}
+                  accessibilityRole="button"
+                  accessibilityState={{ selected: active }}
+                >
+                  <View
+                    style={[styles.tileIcon, active && styles.tileIconActive]}
+                  >
+                    <Ionicons
+                      name={item.icon}
+                      size={22}
+                      color={active ? "#FFFFFF" : COLORS.primary}
+                    />
+                  </View>
+
+                  <Text
+                    style={[styles.tileText, active && styles.tileTextActive]}
+                  >
+                    {item.label}
+                  </Text>
+
+                  {active && (
+                    <Ionicons
+                      name="checkmark-circle"
+                      size={20}
+                      color={COLORS.primary}
+                      style={styles.tileCheck}
+                    />
                   )}
                 </TouchableOpacity>
-              ))}
-            </View>
-          )}
+              );
+            })}
+          </View>
         </View>
 
         {/* DESCRIPTION */}
-
         <FormInput
           label="Description"
           placeholder="Décrivez votre logement..."
+          placeholderTextColor="#94A3B8"
           multiline
           numberOfLines={5}
           value={listing.description}
           onChangeText={(text) => handleChange("description", text)}
         />
+        <Text style={styles.helper}>
+          Indiquez le quartier, l'état du logement et les équipements.
+        </Text>
       </FormSection>
 
       <FormButton title="Suivant" onPress={handleNext} />
@@ -246,10 +243,20 @@ export default function CreateListing() {
   );
 }
 
+const tileShadow = Platform.select({
+  ios: {
+    shadowColor: "#0F172A",
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+  },
+  android: { elevation: 1 },
+});
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#F8FAFC",
+    backgroundColor: COLORS.background,
   },
 
   content: {
@@ -257,94 +264,147 @@ const styles = StyleSheet.create({
     paddingBottom: 40,
   },
 
+  /* Progression */
   progressContainer: {
-    marginBottom: 25,
+    marginBottom: 28,
+  },
+
+  progressHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "baseline",
+    marginBottom: 12,
   },
 
   progressText: {
-    fontSize: 14,
-    color: "#6B7280",
-    marginBottom: 10,
+    fontSize: 15,
+    fontWeight: "700",
+    color: COLORS.text,
   },
 
-  progressBar: {
-    height: 8,
-    backgroundColor: "#E5E7EB",
-    borderRadius: 10,
-    overflow: "hidden",
+  progressHint: {
+    fontSize: 13,
+    color: COLORS.muted,
   },
 
-  progress: {
-    width: "14%",
-    height: "100%",
-    backgroundColor: "#2563EB",
+  segments: {
+    flexDirection: "row",
+    gap: 6,
   },
 
-  selectContainer: {
-    marginBottom: 18,
+  segment: {
+    flex: 1,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: COLORS.border,
+  },
+
+  segmentDone: {
+    backgroundColor: COLORS.primary,
+  },
+
+  /* Groupes */
+  group: {
+    marginBottom: 20,
   },
 
   label: {
     fontSize: 15,
     fontWeight: "600",
-    color: "#111827",
+    color: COLORS.text,
+    marginBottom: 10,
+  },
+
+  /* Contrôle segmenté : Location / Vente */
+  segmented: {
+    flexDirection: "row",
+    backgroundColor: "#E9EDF5",
+    borderRadius: 14,
+    padding: 4,
+  },
+
+  segmentOption: {
+    flex: 1,
+    height: 46,
+    borderRadius: 11,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+  },
+
+  segmentActive: {
+    backgroundColor: COLORS.primary,
+  },
+
+  segmentText: {
+    fontSize: 15,
+    fontWeight: "600",
+    color: COLORS.muted,
+  },
+
+  segmentTextActive: {
+    color: "#FFFFFF",
+  },
+
+  /* Tuiles : type de logement */
+  grid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 12,
+  },
+
+  tile: {
+    width: "48%",
+    flexGrow: 1,
+    flexBasis: "46%",
+    backgroundColor: COLORS.surface,
+    borderRadius: 16,
+    borderWidth: 1.5,
+    borderColor: COLORS.border,
+    padding: 14,
+    gap: 12,
+    ...tileShadow,
+  },
+
+  tileActive: {
+    borderColor: COLORS.primary,
+    backgroundColor: COLORS.primarySoft,
+  },
+
+  tileIcon: {
+    width: 42,
+    height: 42,
+    borderRadius: 12,
+    backgroundColor: COLORS.primarySoft,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+
+  tileIconActive: {
+    backgroundColor: COLORS.primary,
+  },
+
+  tileText: {
+    fontSize: 15,
+    fontWeight: "600",
+    color: COLORS.text,
+  },
+
+  tileTextActive: {
+    color: COLORS.primary,
+  },
+
+  tileCheck: {
+    position: "absolute",
+    top: 10,
+    right: 10,
+  },
+
+  helper: {
+    fontSize: 13,
+    color: COLORS.muted,
+    marginTop: -6,
     marginBottom: 8,
-  },
-
-  selectButton: {
-    height: 55,
-    backgroundColor: "#FFFFFF",
-    borderWidth: 1,
-    borderColor: "#E5E7EB",
-    borderRadius: 14,
-    paddingHorizontal: 16,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-  },
-
-  placeholderText: {
-    color: "#9CA3AF",
-    fontSize: 16,
-  },
-
-  selectedText: {
-    color: "#111827",
-    fontSize: 16,
-  },
-
-  arrow: {
-    fontSize: 12,
-    color: "#6B7280",
-  },
-
-  optionsContainer: {
-    marginTop: 5,
-    backgroundColor: "#FFFFFF",
-    borderWidth: 1,
-    borderColor: "#E5E7EB",
-    borderRadius: 14,
-    overflow: "hidden",
-  },
-
-  option: {
-    minHeight: 50,
-    paddingHorizontal: 16,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    borderBottomWidth: 1,
-    borderBottomColor: "#F3F4F6",
-  },
-
-  optionText: {
-    fontSize: 16,
-    color: "#111827",
-  },
-
-  check: {
-    fontSize: 18,
-    color: "#2563EB",
-    fontWeight: "700",
   },
 });
