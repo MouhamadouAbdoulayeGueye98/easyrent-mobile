@@ -1,4 +1,3 @@
-
 import React from "react";
 import { View, Text, StyleSheet } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -43,10 +42,12 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
   mapContainer: {
-    flex: 1,
-    marginHorizontal: 16,
-    marginBottom: 12,
-    borderRadius: 16,
-    overflow: "hidden",
-  },
+  flex: 1,
+  minHeight: 300,
+  marginHorizontal: 16,
+  marginBottom: 12,
+  borderRadius: 16,
+  overflow: "hidden",
+  backgroundColor: "#D1D5DB",
+},
 });
