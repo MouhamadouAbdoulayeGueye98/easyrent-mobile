@@ -4,6 +4,7 @@ import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
 
 import { useFavorites } from "../../context/FavoritesContext";
+import { isRecent } from "../../utils/dates";
 
 export default function HouseCard({ house, variant = "horizontal" }) {
   const { toggleFavorite, isFavorite } = useFavorites();
@@ -11,20 +12,19 @@ export default function HouseCard({ house, variant = "horizontal" }) {
   const cardStyle = {
     width: variant === "horizontal" ? 280 : "100%",
     marginRight: variant === "horizontal" ? 16 : 0,
-    marginBottom: 20,
+    marginBottom: variant === "grid" ? 0 : 20,
     alignSelf: variant === "large" ? "center" : "auto",
   };
 
   const imageStyle = {
-    height: variant === "horizontal" ? 220 : 250,
+    height:
+      variant === "horizontal" ? 220 : variant === "grid" ? 150 : 250,
   };
 
   const photoUrl = house.photos?.[0]?.url;
 
   // "Nouveau" dérivé : créé il y a moins de 7 jours
-  const isNew =
-    house.createdAt &&
-    (Date.now() - new Date(house.createdAt).getTime()) / (1000 * 60 * 60 * 24) <= 7;
+  const isNew = isRecent(house.createdAt);
 
   return (
     <TouchableOpacity
@@ -67,7 +67,7 @@ export default function HouseCard({ house, variant = "horizontal" }) {
         </TouchableOpacity>
       </View>
 
-      <View style={styles.content}>
+      <View style={[styles.content, variant === "grid" && styles.gridContent]}>
         {house.verified && (
           <View style={styles.ratingContainer}>
             <Ionicons name="shield-checkmark" size={16} color="#10B981" />
@@ -75,19 +75,27 @@ export default function HouseCard({ house, variant = "horizontal" }) {
           </View>
         )}
 
-        <Text style={styles.title} numberOfLines={1}>{house.title}</Text>
+        <Text
+          style={[styles.title, variant === "grid" && styles.gridTitle]}
+          numberOfLines={1}
+        >
+          {house.title}
+        </Text>
 
-        <Text style={styles.location} numberOfLines={1}>
+        <Text
+          style={[styles.location, variant === "grid" && styles.gridLocation]}
+          numberOfLines={1}
+        >
           📍 {house.quartier ? `${house.quartier}, ` : ""}{house.city}
         </Text>
 
-        <View style={styles.infoRow}>
+        <View style={[styles.infoRow, variant === "grid" && styles.gridInfoRow]}>
           {house.rooms != null && <Text style={styles.info}>🛏️ {house.rooms}</Text>}
           {house.surface != null && <Text style={styles.info}>📐 {house.surface} m²</Text>}
           <Text style={styles.info}>{house.type}</Text>
         </View>
 
-        <Text style={styles.price}>
+        <Text style={[styles.price, variant === "grid" && styles.gridPrice]}>
           {house.price.toLocaleString()} FCFA / mois
         </Text>
       </View>
@@ -118,4 +126,9 @@ const styles = StyleSheet.create({
   infoRow: { flexDirection: "row", gap: 14, marginTop: 14 },
   info: { color: "#374151", fontWeight: "500" },
   price: { marginTop: 16, fontSize: 22, fontWeight: "bold", color: "#2563EB" },
+  gridContent: { padding: 12 },
+  gridTitle: { fontSize: 16, marginTop: 4 },
+  gridLocation: { marginTop: 4, fontSize: 12 },
+  gridInfoRow: { gap: 8, marginTop: 8, flexWrap: "wrap" },
+  gridPrice: { marginTop: 10, fontSize: 16 },
 });

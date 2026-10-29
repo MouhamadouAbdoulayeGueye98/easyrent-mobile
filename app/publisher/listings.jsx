@@ -6,28 +6,40 @@ import {
   Text,
   RefreshControl,
 } from "react-native";
-import { useCallback, useState } from "react";
-import { useFocusEffect } from "expo-router";
+import { useCallback, useRef, useState } from "react";
+import { router, useFocusEffect } from "expo-router";
 
 import Header from "../../components/common/Header";
+import Pagination from "../../components/common/Pagination";
 import ListingCard from "../../components/publisher/ListingCard";
 import EmptyListings from "../../components/publisher/EmptyListings";
 
 import { getMyProperties } from "../../services/propertyService";
+
+const PAGE_SIZE = 5;
 
 export default function Listings() {
   const [listings, setListings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState(null);
+  const [page, setPage] = useState(1);
+  const listRef = useRef(null);
 
   const loadListings = async () => {
     try {
       setError(null);
 
       const data = await getMyProperties();
+      const nextListings = Array.isArray(data) ? data : data?.data ?? [];
 
-      setListings(data);
+      setListings(nextListings);
+      setPage((current) =>
+        Math.min(
+          current,
+          Math.max(Math.ceil(nextListings.length / PAGE_SIZE), 1)
+        )
+      );
     } catch (error) {
       console.error("Erreur chargement mes annonces :", error);
 
@@ -43,6 +55,18 @@ export default function Listings() {
       loadListings();
     }, [])
   );
+
+  const totalPages = Math.max(Math.ceil(listings.length / PAGE_SIZE), 1);
+
+  const visibleListings = listings.slice(
+    (page - 1) * PAGE_SIZE,
+    page * PAGE_SIZE
+  );
+
+  const handlePageChange = (nextPage) => {
+    setPage(nextPage);
+    listRef.current?.scrollToOffset({ offset: 0, animated: true });
+  };
 
   const onRefresh = () => {
     setRefreshing(true);
@@ -82,10 +106,15 @@ export default function Listings() {
 
   return (
     <View style={styles.container}>
-      <Header title="Mes annonces" />
-      
+      <Header
+        title="Mes annonces"
+        rightIcon="add"
+        onRightPress={() => router.push("/publisher-create")}
+      />
+
       <FlatList
-        data={listings}
+        ref={listRef}
+        data={visibleListings}
         keyExtractor={(item) => item.id.toString()}
         renderItem={({ item }) => (
           <ListingCard listing={item} />
@@ -96,6 +125,15 @@ export default function Listings() {
           <RefreshControl
             refreshing={refreshing}
             onRefresh={onRefresh}
+          />
+        }
+        ListFooterComponent={
+          <Pagination
+            page={page}
+            totalPages={totalPages}
+            total={listings.length}
+            limit={PAGE_SIZE}
+            onPageChange={handlePageChange}
           />
         }
       />

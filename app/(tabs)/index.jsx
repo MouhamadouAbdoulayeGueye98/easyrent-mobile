@@ -1,6 +1,6 @@
 import { ScrollView, ActivityIndicator, View, Text } from "react-native";
 import { useCallback, useMemo, useState } from "react";
-import { useFocusEffect } from "expo-router";
+import { router, useFocusEffect } from "expo-router";
 
 import { getProperties } from "../../services/properties";
 import { getNotifications } from "../../services/notifications";
@@ -8,6 +8,7 @@ import { useAuth } from "../../context/AuthContext";
 import { useFavorites } from "../../context/FavoritesContext";
 
 import HomeHeader from "../../components/home/HomeHeader";
+import CategoryList from "../../components/home/CategoryList";
 import PopularSection from "../../components/home/PopularSection";
 import NewSection from "../../components/home/NewSection";
 
@@ -92,6 +93,19 @@ export default function Home() {
     return result;
   }, [search, selectedCategory, houses]);
 
+  const openPropertiesList = (section) => {
+    router.push({
+      pathname: "/properties",
+      params: {
+        section,
+        ...(search.trim() ? { search: search.trim() } : {}),
+        ...(selectedCategory !== "Tous"
+          ? { type: selectedCategory.toUpperCase() }
+          : {}),
+      },
+    });
+  };
+
   if (loading) {
     return (
       <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
@@ -106,22 +120,31 @@ export default function Home() {
         unreadCount={unreadCount}
         search={search}
         onSearchChange={setSearch}
-        selectedCategory={selectedCategory}
-        onSelectCategory={setSelectedCategory}
       />
 
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 90 }}
       >
+        <CategoryList
+          selectedCategory={selectedCategory}
+          onSelectCategory={setSelectedCategory}
+        />
+
         {filteredHouses.length === 0 ? (
           <View style={{ padding: 40, alignItems: "center" }}>
             <Text style={{ color: "#6B7280" }}>Aucune annonce trouvée.</Text>
           </View>
         ) : (
           <>
-            <PopularSection houses={filteredHouses} />
-            <NewSection houses={filteredHouses} />
+            <PopularSection
+              houses={filteredHouses}
+              onSeeAll={() => openPropertiesList("popular")}
+            />
+            <NewSection
+              houses={filteredHouses}
+              onSeeAll={() => openPropertiesList("new")}
+            />
           </>
         )}
       </ScrollView>

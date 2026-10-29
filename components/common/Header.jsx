@@ -8,6 +8,7 @@ export default function Header({
   showBack = false,
   onBackPress,
   rightIcon,
+  rightText,
   onRightPress,
 }) {
   const handleBack = () => {
@@ -42,13 +43,17 @@ export default function Header({
       <Text style={styles.title}>{title}</Text>
 
       <View style={styles.right}>
-        {rightIcon && (
-          <TouchableOpacity onPress={onRightPress}>
-            <Ionicons
-              name={rightIcon}
-              size={24}
-              color="#111827"
-            />
+        {(rightIcon || rightText) && (
+          <TouchableOpacity onPress={onRightPress} hitSlop={10}>
+            {rightText ? (
+              <Text style={styles.rightText}>{rightText}</Text>
+            ) : (
+              <Ionicons
+                name={rightIcon}
+                size={24}
+                color="#111827"
+              />
+            )}
           </TouchableOpacity>
         )}
       </View>
@@ -75,6 +80,12 @@ const styles = StyleSheet.create({
   right: {
     width: 30,
     alignItems: "flex-end",
+  },
+
+  rightText: {
+    fontSize: 22,
+    fontWeight: "700",
+    color: "#111827",
   },
 
   title: {
