@@ -1,154 +1,216 @@
+
+import React from "react";
 import {
   View,
   Text,
   StyleSheet,
   TouchableOpacity,
 } from "react-native";
-
 import { Ionicons } from "@expo/vector-icons";
-
 
 export default function ConversationCard({
   conversation,
   onPress,
 }) {
+  const unread = conversation.unread || 0;
 
   return (
-
     <TouchableOpacity
       style={styles.card}
       onPress={onPress}
-      activeOpacity={0.8}
+      activeOpacity={0.75}
     >
+      {/* Avatar */}
+      <View style={styles.avatarContainer}>
+        <View style={styles.avatar}>
+          <Ionicons
+            name="person"
+            size={25}
+            color="#2563EB"
+          />
+        </View>
 
-      <View style={styles.avatar}>
-
-        <Ionicons
-          name="person"
-          size={24}
-          color="#2563EB"
-        />
-
+        {unread > 0 && <View style={styles.onlineDot} />}
       </View>
 
-
+      {/* Conversation details */}
       <View style={styles.content}>
-
-        <Text style={styles.name}>
-          {conversation.name}
-        </Text>
-
+        <View style={styles.nameRow}>
+          <Text style={styles.name} numberOfLines={1}>
+            {conversation.name || "Utilisateur"}
+          </Text>
+        </View>
 
         <Text
-          style={styles.message}
+          style={[
+            styles.message,
+            unread > 0 && styles.unreadMessage,
+          ]}
           numberOfLines={1}
         >
-          {conversation.lastMessage}
+          {conversation.lastMessage || "Aucun message"}
         </Text>
 
-
-        <Text style={styles.property}>
-          {conversation.property}
-        </Text>
-
+        <View style={styles.propertyRow}>
+          <Ionicons
+            name="home-outline"
+            size={13}
+            color="#64748B"
+          />
+          <Text style={styles.property} numberOfLines={1}>
+            {conversation.property}
+          </Text>
+        </View>
       </View>
 
-
-      <View>
-
+      {/* Time and unread counter */}
+      <View style={styles.rightContent}>
         <Text style={styles.time}>
           {conversation.time}
         </Text>
 
-        {
-          conversation.unread > 0 && (
-            <View style={styles.badge}>
-              <Text style={styles.badgeText}>
-                {conversation.unread}
-              </Text>
-            </View>
-          )
-        }
-
+        {unread > 0 ? (
+          <View style={styles.badge}>
+            <Text style={styles.badgeText}>
+              {unread > 99 ? "99+" : unread}
+            </Text>
+          </View>
+        ) : (
+          <View style={styles.checkContainer}>
+            <Ionicons
+              name="checkmark-done"
+              size={17}
+              color="#94A3B8"
+            />
+          </View>
+        )}
       </View>
-
-
     </TouchableOpacity>
-
   );
 }
 
-
 const styles = StyleSheet.create({
+  card: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#FFFFFF",
+    paddingVertical: 16,
+    paddingHorizontal: 15,
+    borderRadius: 18,
+    marginBottom: 12,
 
-  card:{
-    flexDirection:"row",
-    alignItems:"center",
-    backgroundColor:"#FFFFFF",
-    padding:16,
-    borderRadius:18,
-    marginBottom:15,
-    elevation:3,
+    borderWidth: 1,
+    borderColor: "#F1F5F9",
+
+    elevation: 2,
+    shadowColor: "#0F172A",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.04,
+    shadowRadius: 8,
   },
 
-
-  avatar:{
-    width:50,
-    height:50,
-    borderRadius:25,
-    backgroundColor:"#DBEAFE",
-    justifyContent:"center",
-    alignItems:"center",
+  avatarContainer: {
+    position: "relative",
   },
 
-
-  content:{
-    flex:1,
-    marginLeft:15,
+  avatar: {
+    width: 54,
+    height: 54,
+    borderRadius: 18,
+    backgroundColor: "#EFF6FF",
+    justifyContent: "center",
+    alignItems: "center",
   },
 
-
-  name:{
-    fontSize:17,
-    fontWeight:"700",
-    color:"#111827",
+  onlineDot: {
+    position: "absolute",
+    width: 11,
+    height: 11,
+    borderRadius: 6,
+    backgroundColor: "#2563EB",
+    borderWidth: 2,
+    borderColor: "#FFFFFF",
+    right: -2,
+    bottom: -1,
   },
 
-
-  message:{
-    marginTop:5,
-    color:"#6B7280",
+  content: {
+    flex: 1,
+    marginLeft: 13,
+    marginRight: 8,
+    justifyContent: "center",
   },
 
-
-  property:{
-    marginTop:4,
-    fontSize:12,
-    color:"#2563EB",
+  nameRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 5,
   },
 
-
-  time:{
-    color:"#9CA3AF",
-    fontSize:12,
+  name: {
+    fontSize: 15,
+    fontWeight: "700",
+    color: "#0F172A",
+    flexShrink: 1,
   },
 
-
-  badge:{
-    marginTop:8,
-    backgroundColor:"#2563EB",
-    width:22,
-    height:22,
-    borderRadius:11,
-    justifyContent:"center",
-    alignItems:"center",
+  message: {
+    fontSize: 13,
+    color: "#64748B",
+    marginBottom: 7,
   },
 
-
-  badgeText:{
-    color:"#FFFFFF",
-    fontSize:12,
-    fontWeight:"700",
+  unreadMessage: {
+    color: "#334155",
+    fontWeight: "600",
   },
 
+  propertyRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 5,
+  },
+
+  property: {
+    fontSize: 11,
+    color: "#64748B",
+    flex: 1,
+  },
+
+  rightContent: {
+    alignItems: "flex-end",
+    justifyContent: "space-between",
+    alignSelf: "stretch",
+    paddingVertical: 2,
+    minWidth: 45,
+  },
+
+  time: {
+    fontSize: 11,
+    color: "#94A3B8",
+    fontWeight: "500",
+  },
+
+  badge: {
+    minWidth: 21,
+    height: 21,
+    paddingHorizontal: 5,
+    borderRadius: 11,
+    backgroundColor: "#2563EB",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+
+  badgeText: {
+    color: "#FFFFFF",
+    fontSize: 11,
+    fontWeight: "700",
+  },
+
+  checkContainer: {
+    marginTop: 3,
+  },
 });

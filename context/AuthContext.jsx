@@ -13,33 +13,36 @@ export function AuthProvider({ children }) {
     async function loadStoredUser() {
       try {
         const token = await AsyncStorage.getItem("access_token");
+
         if (token) {
           const response = await api.get("/auth/profile");
           setUser(response.data);
         }
       } catch (error) {
+        console.log("AUTH DEBUG:", {
+          message: error.message,
+          status: error.response?.status,
+          url: error.config?.url,
+          code: error.code,
+        });
+
         if (error.response?.status === 401) {
           console.warn("Session invalide : reconnexion nécessaire.");
           await AsyncStorage.removeItem("access_token");
           setUser(null);
-        } else {
-          console.error(
-            "Impossible de vérifier la session : réseau ou backend indisponible.",
-            error.message,
-          );
         }
       } finally {
         setLoading(false);
       }
     }
+
     loadStoredUser();
   }, []);
 
   const logout = async () => {
     await AsyncStorage.removeItem('access_token');
     setUser(null);
-    // Redirection vers la page visiteur / index principal
-    router.replace('/'); 
+    router.replace('/');
   };
 
   return (
