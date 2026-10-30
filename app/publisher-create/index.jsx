@@ -4,11 +4,11 @@ import {
   Text,
   View,
   TouchableOpacity,
-  Alert,
   Platform,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
+import { useToast } from "../../context/ToastContext";
 
 import Header from "../../components/common/Header";
 import FormButton from "../../components/forms/FormButton";
@@ -65,6 +65,7 @@ function ProgressSteps({ hint }) {
 
 export default function CreateListing() {
   const { listing, updateListing } = useListing();
+  const { showToast } = useToast();
 
   function handleChange(key, value) {
     console.log("CHANGE :", key, value);
@@ -92,25 +93,22 @@ export default function CreateListing() {
 
   function handleNext() {
     if (!listing.title.trim()) {
-      Alert.alert("Champ obligatoire", "Veuillez saisir le titre du logement.");
+      showToast("Veuillez saisir le titre du logement.", "error");
       return;
     }
 
     if (!listing.propertyType) {
-      Alert.alert("Champ obligatoire", "Veuillez choisir le type de logement.");
+      showToast("Veuillez choisir le type de logement.", "error");
       return;
     }
 
     if (!listing.listingType) {
-      Alert.alert("Champ obligatoire", "Veuillez choisir le type d'annonce.");
+      showToast("Veuillez choisir le type d'annonce.", "error");
       return;
     }
 
     if (!listing.description.trim()) {
-      Alert.alert(
-        "Champ obligatoire",
-        "Veuillez saisir une description du logement.",
-      );
+      showToast("Veuillez saisir une description du logement.", "error");
       return;
     }
 

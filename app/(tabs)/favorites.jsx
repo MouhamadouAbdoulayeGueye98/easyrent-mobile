@@ -30,9 +30,14 @@ export default function Favorites() {
           setLoading(true);
           await loadFavorites();
           const data = await getProperties();
-          if (isActive) {
-            setProperties(data);
-          }
+
+          const list = Array.isArray(data)
+            ? data
+            : Array.isArray(data?.data)
+              ? data.data
+              : [];
+
+          setProperties(list);
         } catch (error) {
           console.error("Erreur chargement favoris :", error);
         } finally {
@@ -47,8 +52,10 @@ export default function Favorites() {
     }, [user, loadFavorites])
   );
 
-  const favoriteProperties = properties.filter((property) =>
-    favorites.includes(property.id)
+  const favoriteProperties = (
+    Array.isArray(properties) ? properties : []
+  ).filter((property) =>
+    (favorites || []).map(String).includes(String(property.id)),
   );
 
   if (!user) {

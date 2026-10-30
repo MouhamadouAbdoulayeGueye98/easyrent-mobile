@@ -14,6 +14,7 @@ import * as ImagePicker from "expo-image-picker";
 import { useEffect, useState } from "react";
 import { router, useLocalSearchParams } from "expo-router";
 
+import { useToast } from "../../../context/ToastContext";
 import Header from "../../../components/common/Header";
 import FormSection from "../../../components/forms/FormSection";
 import FormInput from "../../../components/forms/FormInput";
@@ -28,6 +29,7 @@ import {
 
 export default function EditListing() {
   const { id } = useLocalSearchParams();
+  const { showToast } = useToast();
 
   const [listing, setListing] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -52,12 +54,8 @@ export default function EditListing() {
         error.response?.data || error,
       );
 
-      Alert.alert("Erreur", "Impossible de charger cette annonce.", [
-        {
-          text: "OK",
-          onPress: () => router.back(),
-        },
-      ]);
+      showToast("Impossible de charger cette annonce.", "error");
+      router.back();
     } finally {
       setLoading(false);
     }
@@ -90,13 +88,15 @@ export default function EditListing() {
                 ...prev,
                 photos: prev.photos.filter((photo) => photo.id !== photoId),
               }));
+
+              showToast("Photo supprimée avec succès.", "success");
             } catch (error) {
               console.error(
                 "Erreur suppression photo :",
                 error.response?.data || error,
               );
 
-              Alert.alert("Erreur", "Impossible de supprimer cette photo.");
+              showToast("Impossible de supprimer cette photo.", "error");
             }
           },
         },
@@ -110,10 +110,7 @@ export default function EditListing() {
         await ImagePicker.requestMediaLibraryPermissionsAsync();
 
       if (!permission.granted) {
-        Alert.alert(
-          "Permission nécessaire",
-          "Veuillez autoriser l'accès à vos photos.",
-        );
+        showToast("Veuillez autoriser l'accès à vos photos.", "error");
         return;
       }
 
@@ -135,35 +132,33 @@ export default function EditListing() {
         ...prev,
         photos: [...(prev.photos || []), uploadedPhoto],
       }));
+
+      showToast("Photo ajoutée avec succès.", "success");
     } catch (error) {
       console.error("Erreur ajout photo :", error.response?.data || error);
 
-      Alert.alert("Erreur", "Impossible d'ajouter la photo.");
+      showToast("Impossible d'ajouter la photo.", "error");
     }
   }
 
   async function handleSave() {
+    if (saving) return;
+
     try {
       setSaving(true);
 
       if (!listing.title || !listing.description) {
-        Alert.alert(
-          "Informations manquantes",
-          "Veuillez compléter le titre et la description.",
-        );
+        showToast("Veuillez compléter le titre et la description.", "error");
         return;
       }
 
       if (!listing.city || !listing.address) {
-        Alert.alert(
-          "Localisation manquante",
-          "Veuillez compléter la ville et l'adresse.",
-        );
+        showToast("Veuillez compléter la ville et l'adresse.", "error");
         return;
       }
 
       if (!listing.price) {
-        Alert.alert("Prix manquant", "Veuillez renseigner le prix.");
+        showToast("Veuillez renseigner le prix.", "error");
         return;
       }
 
@@ -198,23 +193,20 @@ export default function EditListing() {
 
       console.log("ANNONCE MODIFIÉE :", updatedProperty);
 
-      Alert.alert("Modification réussie", "Votre annonce a été mise à jour.", [
-        {
-          text: "OK",
-          onPress: () => {
-            router.back();
-          },
-        },
-      ]);
+      showToast("Votre annonce a été mise à jour.", "success");
+      router.back();
     } catch (error) {
       console.error(
         "Erreur modification annonce :",
         error.response?.data || error,
       );
 
-      Alert.alert(
-        "Erreur",
-        error.response?.data?.message || "Impossible de modifier l'annonce.",
+      const message = error.response?.data?.message;
+      showToast(
+        Array.isArray(message)
+          ? message.join(", ")
+          : message || "Impossible de modifier l'annonce.",
+        "error",
       );
     } finally {
       setSaving(false);

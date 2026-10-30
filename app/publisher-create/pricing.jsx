@@ -1,8 +1,11 @@
+import { useState } from "react";
 import {
   ScrollView,
   StyleSheet,
   Text,
   View,
+  Modal,
+  Pressable,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
@@ -66,6 +69,102 @@ function PricingInfo({ icon, title, description }) {
   );
 }
 
+
+function SelectField({ label, value, placeholder, options, onSelect }) {
+  const [visible, setVisible] = useState(false);
+
+  return (
+    <>
+      <Text style={styles.selectLabel}>{label}</Text>
+
+      <Pressable
+        style={styles.selectInput}
+        onPress={() => setVisible(true)}
+      >
+        <Text
+          style={[
+            styles.selectValue,
+            !value && styles.selectPlaceholder,
+          ]}
+        >
+          {value || placeholder}
+        </Text>
+
+        <Ionicons
+          name="chevron-down"
+          size={20}
+          color={COLORS.muted}
+        />
+      </Pressable>
+
+      <Modal
+        visible={visible}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setVisible(false)}
+      >
+        <Pressable
+          style={styles.modalOverlay}
+          onPress={() => setVisible(false)}
+        >
+          <Pressable
+            style={styles.optionsCard}
+            onPress={(event) => event.stopPropagation()}
+          >
+            <View style={styles.optionsHeader}>
+              <Text style={styles.optionsTitle}>{label}</Text>
+
+              <Pressable onPress={() => setVisible(false)}>
+                <Ionicons
+                  name="close-circle-outline"
+                  size={26}
+                  color={COLORS.muted}
+                />
+              </Pressable>
+            </View>
+
+            {options.map((option) => {
+              const selected = value === option;
+
+              return (
+                <Pressable
+                  key={option}
+                  style={[
+                    styles.optionRow,
+                    selected && styles.optionSelected,
+                  ]}
+                  onPress={() => {
+                    onSelect(option);
+                    setVisible(false);
+                  }}
+                >
+                  <Text
+                    style={[
+                      styles.optionText,
+                      selected && styles.optionTextSelected,
+                    ]}
+                  >
+                    {option}
+                  </Text>
+
+                  {selected && (
+                    <Ionicons
+                      name="checkmark-circle"
+                      size={21}
+                      color={COLORS.primary}
+                    />
+                  )}
+                </Pressable>
+              );
+            })}
+          </Pressable>
+        </Pressable>
+      </Modal>
+    </>
+  );
+}
+
+
 export default function Pricing() {
   const { listing, updateListing } = useListing();
 
@@ -93,20 +192,14 @@ export default function Pricing() {
 
       <View style={styles.intro}>
         <View style={styles.introIcon}>
-          <Ionicons
-            name="wallet-outline"
-            size={28}
-            color={COLORS.primary}
-          />
+          <Ionicons name="wallet-outline" size={28} color={COLORS.primary} />
         </View>
 
-        <Text style={styles.introTitle}>
-          Définissez votre tarif
-        </Text>
+        <Text style={styles.introTitle}>Définissez votre tarif</Text>
 
         <Text style={styles.introDescription}>
-          Renseignez les informations financières et la disponibilité
-          de votre logement.
+          Renseignez les informations financières et la disponibilité de votre
+          logement.
         </Text>
       </View>
 
@@ -125,15 +218,6 @@ export default function Pricing() {
         </Text>
 
         <FormInput
-          label="Charges (optionnel)"
-          placeholder="Ex : 15000 FCFA"
-          placeholderTextColor="#94A3B8"
-          keyboardType="numeric"
-          value={listing.charges}
-          onChangeText={(text) => handleChange("charges", text)}
-        />
-
-        <FormInput
           label="Caution"
           placeholder="Ex : 2 mois"
           placeholderTextColor="#94A3B8"
@@ -141,12 +225,36 @@ export default function Pricing() {
           onChangeText={(text) => handleChange("deposit", text)}
         />
 
-        <FormInput
-          label="Disponibilité"
-          placeholder="Ex : Disponible immédiatement"
-          placeholderTextColor="#94A3B8"
-          value={listing.availability}
-          onChangeText={(text) => handleChange("availability", text)}
+
+        <SelectField
+          label="Charges supplémentaires (optionnel)"
+          placeholder="Sélectionnez les charges"
+          value={listing.charges || ""}
+          options={[
+            "Aucune charge supplémentaire",
+            "Eau",
+            "Électricité",
+            "Eau et électricité",
+            "Eau, électricité et autres charges",
+            "Autres charges",
+          ]}
+          onSelect={(value) => handleChange("charges", value)}
+        />
+
+        <View style={styles.selectSpacing} />
+
+        <SelectField
+          label="Disponibilité du logement"
+          placeholder="Sélectionnez la disponibilité"
+          value={listing.availability || ""}
+          options={[
+            "Disponible immédiatement",
+            "Disponible sous 7 jours",
+            "Disponible sous 15 jours",
+            "Disponible sous 1 mois",
+            "Indisponible temporairement",
+          ]}
+          onSelect={(value) => handleChange("availability", value)}
         />
       </FormSection>
 
@@ -330,5 +438,93 @@ const styles = StyleSheet.create({
     fontSize: 12,
     lineHeight: 18,
     color: COLORS.muted,
+  },
+
+  selectLabel: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: COLORS.text,
+    marginBottom: 9,
+  },
+
+  selectInput: {
+    minHeight: 54,
+    paddingHorizontal: 15,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    borderRadius: 13,
+    backgroundColor: COLORS.surface,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+
+  selectValue: {
+    flex: 1,
+    fontSize: 14,
+    color: COLORS.text,
+    paddingRight: 10,
+  },
+
+  selectPlaceholder: {
+    color: "#94A3B8",
+  },
+
+  selectSpacing: {
+    height: 20,
+  },
+
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(15, 23, 42, 0.45)",
+    justifyContent: "center",
+    paddingHorizontal: 22,
+  },
+
+  optionsCard: {
+    backgroundColor: COLORS.surface,
+    borderRadius: 20,
+    padding: 18,
+  },
+
+  optionsHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 14,
+  },
+
+  optionsTitle: {
+    flex: 1,
+    fontSize: 17,
+    fontWeight: "700",
+    color: COLORS.text,
+    marginRight: 10,
+  },
+
+  optionRow: {
+    minHeight: 48,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 12,
+    borderRadius: 11,
+    marginBottom: 5,
+  },
+
+  optionSelected: {
+    backgroundColor: COLORS.primarySoft,
+  },
+
+  optionText: {
+    flex: 1,
+    fontSize: 14,
+    color: COLORS.text,
+    paddingRight: 10,
+  },
+
+  optionTextSelected: {
+    color: COLORS.primary,
+    fontWeight: "700",
   },
 });

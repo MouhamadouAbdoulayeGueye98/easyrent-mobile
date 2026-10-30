@@ -2,7 +2,6 @@ import { useRef, useState } from "react";
 import {
   ScrollView,
   StyleSheet,
-  Alert,
   View,
   Text,
   Pressable,
@@ -13,6 +12,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import * as Location from "expo-location";
 import MapView, { Marker } from "react-native-maps";
+import { useToast } from "../../context/ToastContext";
 
 import Header from "../../components/common/Header";
 import FormSection from "../../components/forms/FormSection";
@@ -67,6 +67,7 @@ export default function LocationScreen() {
   const mapRef = useRef(null);
   const [mapType, setMapType] = useState("standard");
   const [loadingGPS, setLoadingGPS] = useState(false);
+  const { showToast } = useToast();
 
   // Région de départ de la carte (lue une seule fois)
   const [initialRegion] = useState(() => ({
@@ -101,9 +102,9 @@ export default function LocationScreen() {
       const { status } = await Location.requestForegroundPermissionsAsync();
 
       if (status !== "granted") {
-        Alert.alert(
-          "Autorisation nécessaire",
-          "Autorise l'accès à ta position pour localiser le logement.",
+        showToast(
+          "Autorise l'accès à ta position dans les réglages pour utiliser le GPS.",
+          "error",
         );
         return;
       }
@@ -119,22 +120,26 @@ export default function LocationScreen() {
 
       selectPosition(coordinate);
 
-      // Recentre la carte sur la position trouvée
+      // Recentre la carte sur la position récupérée
       mapRef.current?.animateToRegion(
-        { ...coordinate, latitudeDelta: 0.01, longitudeDelta: 0.01 },
+        {
+          ...coordinate,
+          latitudeDelta: 0.01,
+          longitudeDelta: 0.01,
+        },
         500,
       );
 
-      Alert.alert(
-        "Position récupérée",
-        "La position GPS a été enregistrée. Vérifie qu'elle correspond bien au logement.",
+      showToast(
+        "Position GPS récupérée. Vérifie qu'elle correspond bien au logement.",
+        "success",
       );
     } catch (error) {
       console.error("Erreur GPS :", error);
 
-      Alert.alert(
-        "Erreur GPS",
+      showToast(
         "Impossible de récupérer la position. Vérifie les réglages de localisation de ton téléphone.",
+        "error",
       );
     } finally {
       setLoadingGPS(false);
@@ -143,22 +148,22 @@ export default function LocationScreen() {
 
   function handleNext() {
     if (!listing.region?.trim()) {
-      Alert.alert("Champ obligatoire", "Veuillez saisir la région.");
+      showToast("Veuillez saisir la région.", "error");
       return;
     }
 
     if (!listing.city?.trim()) {
-      Alert.alert("Champ obligatoire", "Veuillez saisir la ville.");
+      showToast("Veuillez saisir la ville.", "error");
       return;
     }
 
     if (!listing.district?.trim()) {
-      Alert.alert("Champ obligatoire", "Veuillez saisir le quartier.");
+      showToast("Veuillez saisir le quartier.", "error");
       return;
     }
 
     if (!listing.address?.trim()) {
-      Alert.alert("Champ obligatoire", "Veuillez saisir l'adresse précise.");
+      showToast("Veuillez saisir l'adresse précise.", "error");
       return;
     }
 
@@ -166,7 +171,6 @@ export default function LocationScreen() {
 
     router.push("/publisher-create/features");
   }
-
   return (
     <ScrollView
       style={styles.container}

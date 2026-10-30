@@ -188,6 +188,7 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: "#EEF2F7",
         padding: 20,
+        paddingTop: 20,
     },
 
     list: {

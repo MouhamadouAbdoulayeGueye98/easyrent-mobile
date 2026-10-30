@@ -1,50 +1,69 @@
 import { useState } from "react";
+
 import {
-    ActivityIndicator,
-    Alert,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  ActivityIndicator,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+  KeyboardAvoidingView,
+  ScrollView,
+  Platform,
+  StatusBar,
 } from "react-native";
 
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 
+import { useToast } from "../../context/ToastContext";
 import { forgotPassword } from "../../services/auth";
 
+const COLORS = {
+  primary: "#1749A6",
+  primaryDark: "#10377E",
+  background: "#F4F7FC",
+  white: "#FFFFFF",
+  text: "#172033",
+  muted: "#758198",
+  border: "#E2E8F0",
+};
+
 export default function ForgotPassword() {
+  const { showToast } = useToast();
+
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
 
   async function handleSendReset() {
-    // Nettoyage des espaces autour de l'email
+    if (loading) return;
+
     const formattedEmail = email.trim();
 
     if (!formattedEmail) {
-      Alert.alert(
-        "Adresse email requise",
-        "Veuillez saisir votre adresse email.",
-      );
+      showToast("Veuillez saisir votre adresse email.", "error");
+      return;
+    }
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formattedEmail)) {
+      showToast("Veuillez saisir une adresse email valide.", "error");
       return;
     }
 
     try {
       setLoading(true);
 
-      // Appels à la fonction d'authentification
       await forgotPassword(formattedEmail);
 
       setSent(true);
 
-      Alert.alert(
-        "Enregistré avec succès",
-        `Un e-mail de réinitialisation de mot de passe a été envoyé à l'adresse ${formattedEmail}.`,
+      showToast(
+        `Un e-mail de réinitialisation a été envoyé à ${formattedEmail}.`,
+        "success",
       );
     } catch (error) {
-      console.error("Erreur lors de la réinitialisation:", error);
+      console.error("Erreur lors de la réinitialisation :", error);
 
       let message = "Impossible d'envoyer la demande pour le moment.";
 
@@ -63,126 +82,321 @@ export default function ForgotPassword() {
           message = "Adresse e-mail invalide.";
           break;
 
-        default:
-          message = error?.message || message;
+        default: {
+          const apiMessage = error?.response?.data?.message;
+
+          if (Array.isArray(apiMessage)) {
+            message = apiMessage.join("\n");
+          } else if (typeof apiMessage === "string") {
+            message = apiMessage;
+          } else if (error?.message) {
+            message = error.message;
+          }
+
+          break;
+        }
       }
 
-      Alert.alert("Réinitialisation", message);
+      showToast(message, "error");
     } finally {
       setLoading(false);
     }
   }
 
   return (
-    <View style={styles.container}>
-      <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-        <Ionicons name="arrow-back" size={24} color="#111827" />
-      </TouchableOpacity>
-
-      <Text style={styles.logo}>🔒</Text>
-
-      <Text style={styles.title}>Mot de passe oublié</Text>
-
-      <Text style={styles.subtitle}>
-        Saisissez votre adresse email, nous vous enverrons un lien pour
-        réinitialiser votre mot de passe.
-      </Text>
-
-      <TextInput
-        placeholder="Adresse email"
-        placeholderTextColor="#9CA3AF"
-        keyboardType="email-address"
-        autoCapitalize="none"
-        value={email}
-        onChangeText={setEmail}
-        style={styles.input}
-        editable={!loading}
+    <KeyboardAvoidingView
+      style={styles.screen}
+      behavior={Platform.OS === "ios" ? "padding" : undefined}
+    >
+      <StatusBar
+        barStyle="light-content"
+        backgroundColor={COLORS.primaryDark}
       />
 
-      <TouchableOpacity
-        style={styles.button}
-        onPress={handleSendReset}
-        disabled={loading}
+      <ScrollView
+        contentContainerStyle={styles.content}
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
       >
-        {loading ? (
-          <ActivityIndicator color="#FFFFFF" />
-        ) : (
-          <Text style={styles.buttonText}>Envoyer</Text>
-        )}
-      </TouchableOpacity>
+        <View style={styles.header}>
+          <TouchableOpacity
+            style={styles.backButton}
+            onPress={() => router.back()}
+            accessibilityLabel="Retour"
+          >
+            <Ionicons name="arrow-back" size={22} color={COLORS.white} />
+          </TouchableOpacity>
 
-      {sent && (
-        <View style={styles.successBox}>
-          <Ionicons name="checkmark-circle" size={22} color="#16A34A" />
-          <Text style={styles.successText}>
-            Demande enregistrée avec succès ! Vérifiez votre boîte mail.
+          <View style={styles.brand}>
+            <View style={styles.logoContainer}>
+              <Ionicons name="lock-closed" size={34} color={COLORS.primary} />
+            </View>
+
+            <Text style={styles.brandName}>Easy Rent</Text>
+
+            <Text style={styles.brandSubtitle}>
+              Sécurisez l’accès à votre compte
+            </Text>
+          </View>
+        </View>
+
+        <View style={styles.formCard}>
+          <View style={styles.headingIcon}>
+            <Ionicons name="key-outline" size={25} color={COLORS.primary} />
+          </View>
+
+          <Text style={styles.title}>Mot de passe oublié ?</Text>
+
+          <Text style={styles.subtitle}>
+            Saisissez l’adresse email associée à votre compte. Nous vous
+            enverrons les instructions pour réinitialiser votre mot de passe.
+          </Text>
+
+          <Text style={styles.label}>Adresse email</Text>
+
+          <View style={styles.inputContainer}>
+            <Ionicons
+              name="mail-outline"
+              size={20}
+              color={COLORS.muted}
+              style={styles.inputIcon}
+            />
+
+            <TextInput
+              placeholder="exemple@email.com"
+              placeholderTextColor="#9CA3AF"
+              keyboardType="email-address"
+              autoCapitalize="none"
+              autoCorrect={false}
+              value={email}
+              onChangeText={(value) => {
+                setEmail(value);
+                if (sent) setSent(false);
+              }}
+              style={styles.input}
+              editable={!loading}
+              returnKeyType="send"
+              onSubmitEditing={handleSendReset}
+            />
+          </View>
+
+          <TouchableOpacity
+            style={[styles.button, loading && styles.buttonDisabled]}
+            onPress={handleSendReset}
+            disabled={loading}
+            activeOpacity={0.85}
+          >
+            {loading ? (
+              <ActivityIndicator color={COLORS.white} />
+            ) : (
+              <>
+                <Text style={styles.buttonText}>Envoyer les instructions</Text>
+
+                <Ionicons name="arrow-forward" size={20} color={COLORS.white} />
+              </>
+            )}
+          </TouchableOpacity>
+
+          {sent && (
+            <View style={styles.successBox}>
+              <Ionicons name="checkmark-circle" size={22} color="#16A34A" />
+
+              <Text style={styles.successText}>
+                Demande envoyée. Vérifiez votre boîte mail ainsi que vos
+                courriers indésirables.
+              </Text>
+            </View>
+          )}
+
+          <View style={styles.loginContainer}>
+            <Text style={styles.loginText}>
+              Vous vous souvenez de votre mot de passe ?
+            </Text>
+
+            <TouchableOpacity
+              onPress={() => router.replace("/auth/login")}
+              disabled={loading}
+            >
+              <Text style={styles.loginLink}>Se connecter</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        <View style={styles.footer}>
+          <Ionicons
+            name="shield-checkmark-outline"
+            size={16}
+            color={COLORS.muted}
+          />
+
+          <Text style={styles.footerText}>
+            Votre compte Easy Rent reste protégé.
           </Text>
         </View>
-      )}
-
-      <TouchableOpacity onPress={() => router.replace("/auth/login")}>
-        <Text style={styles.register}>
-          Vous vous souvenez de votre mot de passe ?{" "}
-          <Text style={styles.link}>Se connecter</Text>
-        </Text>
-      </TouchableOpacity>
-    </View>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  screen: {
     flex: 1,
-    backgroundColor: "#F8FAFC",
-    justifyContent: "center",
-    padding: 25,
+    backgroundColor: COLORS.background,
   },
+
+  content: {
+    flexGrow: 1,
+    paddingBottom: 24,
+  },
+
+  header: {
+    backgroundColor: COLORS.primaryDark,
+    paddingTop: Platform.OS === "android" ? 18 : 52,
+    paddingHorizontal: 24,
+    paddingBottom: 45,
+    borderBottomLeftRadius: 30,
+    borderBottomRightRadius: 30,
+  },
+
   backButton: {
-    position: "absolute",
-    top: 50,
-    left: 20,
-    padding: 8,
-  },
-  logo: {
-    fontSize: 60,
-    textAlign: "center",
-  },
-  title: {
-    marginTop: 20,
-    fontSize: 30,
-    fontWeight: "bold",
-    textAlign: "center",
-    color: "#111827",
-  },
-  subtitle: {
-    marginTop: 8,
-    textAlign: "center",
-    color: "#6B7280",
-    marginBottom: 40,
-    fontSize: 16,
-    paddingHorizontal: 10,
-  },
-  input: {
-    backgroundColor: "#FFFFFF",
+    width: 44,
+    height: 44,
     borderRadius: 14,
-    padding: 16,
-    marginBottom: 18,
-    borderWidth: 1,
-    borderColor: "#E5E7EB",
-    fontSize: 16,
-  },
-  button: {
-    marginTop: 10,
-    backgroundColor: "#2563EB",
-    borderRadius: 14,
-    padding: 18,
+    backgroundColor: "rgba(255,255,255,0.14)",
     alignItems: "center",
+    justifyContent: "center",
   },
+
+  brand: {
+    alignItems: "center",
+    marginTop: 12,
+  },
+
+  logoContainer: {
+    width: 70,
+    height: 70,
+    borderRadius: 20,
+    backgroundColor: COLORS.white,
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 12,
+  },
+
+  brandName: {
+    fontSize: 25,
+    fontWeight: "800",
+    color: COLORS.white,
+    letterSpacing: 0.3,
+  },
+
+  brandSubtitle: {
+    marginTop: 6,
+    fontSize: 13,
+    color: "#DCE7FA",
+    textAlign: "center",
+  },
+
+  formCard: {
+    backgroundColor: COLORS.white,
+    marginHorizontal: 20,
+    marginTop: -22,
+    paddingHorizontal: 22,
+    paddingTop: 27,
+    paddingBottom: 25,
+    borderRadius: 24,
+    borderWidth: 1,
+    borderColor: "#EDF1F7",
+    elevation: 5,
+    shadowColor: "#152C52",
+    shadowOffset: { width: 0, height: 5 },
+    shadowOpacity: 0.07,
+    shadowRadius: 14,
+  },
+
+  headingIcon: {
+    width: 52,
+    height: 52,
+    borderRadius: 16,
+    backgroundColor: "#EEF4FF",
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 18,
+  },
+
+  title: {
+    fontSize: 26,
+    fontWeight: "800",
+    color: COLORS.text,
+  },
+
+  subtitle: {
+    marginTop: 10,
+    marginBottom: 25,
+    fontSize: 14,
+    lineHeight: 22,
+    color: COLORS.muted,
+  },
+
+  label: {
+    fontSize: 14,
+    fontWeight: "700",
+    color: COLORS.text,
+    marginBottom: 9,
+  },
+
+  inputContainer: {
+    minHeight: 54,
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: COLORS.white,
+    borderWidth: 1,
+    borderColor: COLORS.border,
+    borderRadius: 14,
+    paddingHorizontal: 14,
+  },
+
+  inputIcon: {
+    marginRight: 11,
+  },
+
+  input: {
+    flex: 1,
+    minWidth: 0,
+    paddingVertical: 14,
+    fontSize: 15,
+    color: COLORS.text,
+  },
+
+  button: {
+    minHeight: 56,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 10,
+    backgroundColor: COLORS.primary,
+    borderRadius: 15,
+    marginTop: 22,
+    paddingHorizontal: 18,
+    paddingVertical: 16,
+    elevation: 3,
+    shadowColor: COLORS.primary,
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.2,
+    shadowRadius: 6,
+  },
+
+  buttonDisabled: {
+    opacity: 0.7,
+  },
+
   buttonText: {
-    color: "#FFFFFF",
-    fontWeight: "bold",
-    fontSize: 18,
+    color: COLORS.white,
+    fontSize: 15,
+    fontWeight: "800",
+    textAlign: "center",
+    flexShrink: 1,
   },
+
   successBox: {
     flexDirection: "row",
     alignItems: "center",
@@ -194,20 +408,44 @@ const styles = StyleSheet.create({
     marginTop: 20,
     gap: 8,
   },
+
   successText: {
     flex: 1,
     color: "#166534",
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: "500",
+    lineHeight: 19,
   },
-  register: {
-    marginTop: 30,
+
+  loginContainer: {
+    alignItems: "center",
+    marginTop: 25,
+    gap: 8,
+  },
+
+  loginText: {
+    color: COLORS.muted,
+    fontSize: 13,
     textAlign: "center",
-    color: "#6B7280",
-    fontSize: 15,
   },
-  link: {
-    color: "#2563EB",
-    fontWeight: "700",
+
+  loginLink: {
+    color: COLORS.primary,
+    fontSize: 14,
+    fontWeight: "800",
+  },
+
+  footer: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: 22,
+    paddingHorizontal: 20,
+    gap: 7,
+  },
+
+  footerText: {
+    color: COLORS.muted,
+    fontSize: 12,
   },
 });

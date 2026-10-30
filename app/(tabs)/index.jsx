@@ -31,8 +31,14 @@ export default function Home() {
         }
         const properties = await getProperties();
 
+        const list = Array.isArray(properties)
+          ? properties
+          : Array.isArray(properties?.data)
+            ? properties.data
+            : [];
+
         if (isActive) {
-          setHouses(properties);
+          setHouses(list);
         }
       } catch (error) {
         console.error("Erreur chargement annonces :", error);
@@ -91,6 +97,8 @@ export default function Home() {
 
     return result;
   }, [search, selectedCategory, houses]);
+
+  
 
   if (loading) {
     return (

@@ -5,10 +5,10 @@ import {
   Text,
   TouchableOpacity,
   Image,
-  Alert,
   Platform,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { useToast } from "../../context/ToastContext";
 
 import { useState } from "react";
 import { router } from "expo-router";
@@ -66,46 +66,59 @@ function ProgressSteps({ hint }) {
 
 export default function Photos() {
   const { listing, resetListing } = useListing();
+  const { showToast } = useToast();
 
   const [images, setImages] = useState([]);
   const [loading, setLoading] = useState(false);
   const [uploadIndex, setUploadIndex] = useState(0);
 
   async function pickImages() {
-    const remaining = MAX_PHOTOS - images.length;
+    try {
+      const remaining = MAX_PHOTOS - images.length;
 
-    if (remaining <= 0) {
-      Alert.alert(
-        "Limite atteinte",
-        `Tu peux ajouter ${MAX_PHOTOS} photos au maximum.`,
-      );
-      return;
-    }
+      if (remaining <= 0) {
+        showToast(`Tu peux ajouter ${MAX_PHOTOS} photos au maximum.`, "error");
+        return;
+      }
 
-    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      const permission =
+        await ImagePicker.requestMediaLibraryPermissionsAsync();
 
-    if (!permission.granted) {
-      Alert.alert(
-        "Permission refusée",
-        "La permission est nécessaire pour choisir des images.",
-      );
-      return;
-    }
+      if (!permission.granted) {
+        showToast(
+          "La permission est nécessaire pour choisir des images.",
+          "error",
+        );
+        return;
+      }
 
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ["images"],
-      allowsMultipleSelection: true,
-      selectionLimit: remaining,
-      quality: 0.7,
-    });
-
-    if (!result.canceled) {
-      // Les nouvelles photos s'ajoutent aux précédentes (sans doublons)
-      setImages((prev) => {
-        const known = new Set(prev.map((item) => item.uri));
-        const fresh = result.assets.filter((item) => !known.has(item.uri));
-        return [...prev, ...fresh].slice(0, MAX_PHOTOS);
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ["images"],
+        allowsMultipleSelection: true,
+        selectionLimit: remaining,
+        quality: 0.7,
       });
+
+      if (!result.canceled) {
+        setImages((prev) => {
+          const known = new Set(prev.map((item) => item.uri));
+          const fresh = result.assets.filter((item) => !known.has(item.uri));
+
+          const nextImages = [...prev, ...fresh].slice(0, MAX_PHOTOS);
+
+          if (fresh.length > remaining) {
+            showToast(
+              `Tu peux ajouter ${MAX_PHOTOS} photos au maximum.`,
+              "info",
+            );
+          }
+
+          return nextImages;
+        });
+      }
+    } catch (error) {
+      console.error("Erreur sélection photos :", error);
+      showToast("Impossible de sélectionner les photos.", "error");
     }
   }
 
@@ -114,41 +127,33 @@ export default function Photos() {
   }
 
   async function handlePublish() {
+    if (loading) return;
+
     try {
       setLoading(true);
 
       // Vérifications
       if (!listing.title || !listing.description) {
-        Alert.alert(
-          "Informations manquantes",
-          "Veuillez compléter les informations générales.",
-        );
+        showToast("Veuillez compléter les informations générales.", "error");
         return;
       }
 
       if (!listing.city || !listing.address) {
-        Alert.alert(
-          "Localisation manquante",
-          "Veuillez compléter la localisation.",
-        );
+        showToast("Veuillez compléter la localisation.", "error");
         return;
       }
 
       if (!listing.price) {
-        Alert.alert(
-          "Prix manquant",
-          "Veuillez renseigner le prix du logement.",
-        );
+        showToast("Veuillez renseigner le prix du logement.", "error");
         return;
       }
 
       if (!listing.propertyType) {
-        Alert.alert("Type manquant", "Veuillez choisir le type de logement.");
+        showToast("Veuillez choisir le type de logement.", "error");
         return;
       }
 
       // 1. Création de l'annonce
-
       const property = await createProperty({
         title: listing.title,
         description: listing.description,
@@ -158,7 +163,6 @@ export default function Photos() {
         city: listing.city,
         quartier: listing.district || undefined,
 
-        // Coordonnées GPS du logement
         latitude:
           listing.latitude != null ? Number(listing.latitude) : undefined,
         longitude:
@@ -196,21 +200,19 @@ export default function Photos() {
       resetListing();
       setImages([]);
 
-      // 4. Message puis retour dashboard
-      Alert.alert("Annonce publiée", "Votre logement a été créé avec succès.", [
-        {
-          text: "OK",
-          onPress: () => {
-            router.replace("/publisher");
-          },
-        },
-      ]);
+      // 4. Succès et retour au dashboard
+      showToast("Votre logement a été créé avec succès.", "success");
+
+      router.replace("/publisher");
     } catch (error) {
       console.error("Erreur création annonce :", error.response?.data || error);
 
-      Alert.alert(
-        "Erreur",
-        error.response?.data?.message || "Impossible de publier l'annonce.",
+      const message = error.response?.data?.message;
+      showToast(
+        Array.isArray(message)
+          ? message.join(", ")
+          : message || "Impossible de publier l'annonce.",
+        "error",
       );
     } finally {
       setLoading(false);

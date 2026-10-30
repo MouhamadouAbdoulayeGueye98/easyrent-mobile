@@ -7,6 +7,8 @@ import {
   StyleSheet,
   StatusBar,
   TouchableOpacity,
+  RefreshControl,
+  Image,
 } from "react-native";
 import { router, useFocusEffect } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
@@ -14,57 +16,124 @@ import { Ionicons } from "@expo/vector-icons";
 import StatCard from "../../components/publisher/StatCard";
 import QuickAction from "../../components/publisher/QuickAction";
 import ActivityCard from "../../components/publisher/ActivityCard";
+
 import { getConversations } from "../../services/conversations";
 import { getMyProperties } from "../../services/propertyService";
 import { getVisits } from "../../services/visits";
 
 const COLORS = {
-  primary: "#2563EB",
-  background: "#F5F7FB",
+  primary: "#1749A6",
+  primaryDark: "#10377E",
+  background: "#F4F7FC",
   surface: "#FFFFFF",
-  text: "#111827",
-  muted: "#6B7280",
-  border: "#E8EDF5",
+  text: "#172033",
+  muted: "#758198",
+  border: "#E2E8F0",
   blueSoft: "#EAF1FF",
+  green: "#15966A",
+  greenSoft: "#E8F7F0",
+  purple: "#7956D8",
+  purpleSoft: "#F0EBFF",
 };
 
 export default function PublisherDashboard() {
   const [messagesCount, setMessagesCount] = useState(0);
   const [requestsCount, setRequestsCount] = useState(0);
   const [propertiesCount, setPropertiesCount] = useState(0);
+
   const [recentVisits, setRecentVisits] = useState([]);
   const [recentMessages, setRecentMessages] = useState([]);
+
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const fetchStats = useCallback(async (isRefresh = false) => {
+    try {
+      if (isRefresh) {
+        setRefreshing(true);
+      } else {
+        setLoading(true);
+      }
+
+      const [conversations, visits, properties] = await Promise.all([
+        getConversations(),
+        getVisits(),
+        getMyProperties(),
+      ]);
+
+      const safeConversations = Array.isArray(conversations)
+        ? conversations
+        : [];
+
+      const safeVisits = Array.isArray(visits) ? visits : [];
+
+      const safeProperties = Array.isArray(properties) ? properties : [];
+
+      setMessagesCount(safeConversations.length);
+      setRequestsCount(safeVisits.length);
+      setPropertiesCount(safeProperties.length);
+
+      setRecentVisits(safeVisits.slice(0, 3));
+      setRecentMessages(safeConversations.slice(0, 3));
+    } catch (error) {
+      console.error(
+        "Erreur chargement dashboard annonceur :",
+        error.response?.data || error,
+      );
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  }, []);
 
   useFocusEffect(
     useCallback(() => {
       let isActive = true;
 
-      async function fetchStats() {
+      async function loadDashboard() {
         try {
+          setLoading(true);
+
           const [conversations, visits, properties] = await Promise.all([
-            getConversations().catch(() => []),
-            getVisits().catch(() => []),
-            getMyProperties().catch(() => []),
+            getConversations(),
+            getVisits(),
+            getMyProperties(),
           ]);
 
-          if (isActive) {
-            setMessagesCount(conversations.length);
-            setRequestsCount(visits.length);
-            setPropertiesCount(properties.length);
-            setRecentVisits(visits.slice(0, 2));
-            setRecentMessages(conversations.slice(0, 2));
-          }
+          if (!isActive) return;
+
+          const safeConversations = Array.isArray(conversations)
+            ? conversations
+            : [];
+
+          const safeVisits = Array.isArray(visits) ? visits : [];
+
+          const safeProperties = Array.isArray(properties) ? properties : [];
+
+          setMessagesCount(safeConversations.length);
+          setRequestsCount(safeVisits.length);
+          setPropertiesCount(safeProperties.length);
+
+          setRecentVisits(safeVisits.slice(0, 3));
+          setRecentMessages(safeConversations.slice(0, 3));
         } catch (error) {
-          console.error("Erreur chargement stats dashboard :", error);
+          console.error(
+            "Erreur chargement dashboard annonceur :",
+            error.response?.data || error,
+          );
+        } finally {
+          if (isActive) {
+            setLoading(false);
+          }
         }
       }
 
-      fetchStats();
+      loadDashboard();
 
       return () => {
         isActive = false;
       };
-    }, [])
+    }, []),
   );
 
   return (
@@ -75,176 +144,241 @@ export default function PublisherDashboard() {
         style={styles.container}
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={() => fetchStats(true)}
+            tintColor={COLORS.primary}
+            colors={[COLORS.primary]}
+          />
+        }
       >
         {/* En-tête */}
         <View style={styles.header}>
           <View style={styles.headerText}>
-            {/* <Text style={styles.greeting}>BONJOUR </Text> */}
-            <Text style={styles.name}>Votre espace annonceur</Text>
-            <Text style={styles.headerSubtitle}>
-              Gérez vos logements et suivez votre activité en un coup d’œil.
+            <View style={styles.eyebrow}>
+              <View style={styles.eyebrowDot} />
+              <Text style={styles.eyebrowText}>ESPACE ANNONCEUR</Text>
+            </View>
+
+            <Text style={styles.title}>Tableau de bord</Text>
+
+            <Text style={styles.subtitle}>
+              Retrouvez ici l’essentiel de votre activité immobilière.
             </Text>
           </View>
 
           <TouchableOpacity
-            style={styles.headerBadge}
-            onPress={() => router.push("/publisher/requests")}
-            activeOpacity={0.75}
-            accessibilityLabel="Notifications"
+            style={styles.notificationButton}
+            onPress={() => router.push("/notifications")}
+            activeOpacity={0.8}
+            accessibilityRole="button"
+            accessibilityLabel="Consulter les demandes"
           >
-            <Ionicons name="notifications-outline" size={25} color="#FFFFFF" />
-
-            <View style={styles.notificationDot} />
+            <Ionicons
+              name="notifications-outline"
+              size={23}
+              color={COLORS.primary}
+            />
           </TouchableOpacity>
         </View>
 
-        {/* Statistiques */}
-        <View style={styles.sectionHeader}>
-          <View>
-            <Text style={styles.sectionTitle}>Vue d’ensemble</Text>
-            <Text style={styles.sectionSubtitle}>
-              Les chiffres de votre activité
+        {/* Bandeau de bienvenue */}
+        <View style={styles.welcomeCard}>
+          <View style={styles.welcomeContent}>
+            <Text style={styles.welcomeLabel}>BIENVENUE</Text>
+            <Text style={styles.welcomeTitle}>
+              Gérez vos logements{"\n"}en toute simplicité.
             </Text>
+            <Text style={styles.welcomeDescription}>
+              Publiez et suivez vos annonces depuis un seul espace.
+            </Text>
+
+            <TouchableOpacity
+              style={styles.primaryButton}
+              onPress={() => router.push("/publisher-create")}
+              activeOpacity={0.85}
+            >
+              <Ionicons name="add" size={20} color="#FFFFFF" />
+              <Text style={styles.primaryButtonText}>Ajouter un logement</Text>
+            </TouchableOpacity>
           </View>
+
+          <View style={styles.welcomeIcon}>
+            <Ionicons name="business-outline" size={45} color="#FFFFFF" />
+          </View>
+
+          <View style={styles.decorativeCircle} />
         </View>
 
-        <View style={styles.statsContainer}>
+        {/* Statistiques réelles */}
+        <View style={styles.sectionHeader}>
+          <View style={styles.sectionText}>
+            <Text style={styles.sectionTitle}>Votre activité</Text>
+            <Text style={styles.sectionSubtitle}>
+              Données issues de votre compte
+            </Text>
+          </View>
+
+          <TouchableOpacity
+            style={styles.refreshButton}
+            onPress={() => fetchStats(true)}
+            disabled={refreshing || loading}
+            activeOpacity={0.7}
+            accessibilityLabel="Actualiser les statistiques"
+          >
+            <Ionicons name="refresh-outline" size={19} color={COLORS.primary} />
+          </TouchableOpacity>
+        </View>
+
+        <View style={styles.statsGrid}>
           <StatCard
             title="Annonces"
-            value={propertiesCount.toString()}
+            value={loading ? "—" : propertiesCount.toString()}
             icon="home"
-            color="#2563EB"
+            color={COLORS.primary}
             onPress={() => router.push("/publisher/listings")}
           />
 
           <StatCard
             title="Demandes"
-            value={requestsCount.toString()}
+            value={loading ? "—" : requestsCount.toString()}
             icon="calendar"
-            color="#10B981"
+            color={COLORS.green}
             onPress={() => router.push("/publisher/requests")}
           />
 
           <StatCard
-            title="Messages"
-            value={messagesCount.toString()}
+            title="Conversations"
+            value={loading ? "—" : messagesCount.toString()}
             icon="chatbubble"
-            color="#8B5CF6"
+            color={COLORS.purple}
             onPress={() => router.push("/publisher/messages")}
           />
-
-          <StatCard title="Vues" value="245" icon="eye" color="#F59E0B" />
         </View>
 
         {/* Actions rapides */}
         <View style={styles.sectionHeader}>
-          <View>
-            <Text style={styles.sectionTitle}>Actions rapides</Text>
+          <View style={styles.sectionText}>
+            <Text style={styles.sectionTitle}>Accès rapides</Text>
             <Text style={styles.sectionSubtitle}>
-              Accédez directement aux fonctionnalités
+              Les fonctionnalités essentielles
             </Text>
           </View>
         </View>
 
-        <View style={styles.actionsContainer}>
-          <QuickAction
-            title="Ajouter un logement"
-            icon="add-circle"
-            color="#2563EB"
-            onPress={() => router.push("/publisher-create")}
-          />
-
+        <View style={styles.actionsGrid}>
           <QuickAction
             title="Mes annonces"
             icon="home"
-            color="#10B981"
+            color={COLORS.primary}
             onPress={() => router.push("/publisher/listings")}
           />
 
           <QuickAction
-            title="Messages"
+            title="Demandes de visite"
+            icon="calendar"
+            color={COLORS.green}
+            onPress={() => router.push("/publisher/requests")}
+          />
+
+          <QuickAction
+            title="Mes messages"
             icon="chatbubble"
-            color="#8B5CF6"
+            color={COLORS.purple}
             onPress={() => router.push("/publisher/messages")}
           />
 
           <QuickAction
-            title="Profil"
+            title="Mon profil"
             icon="person"
-            color="#F59E0B"
+            color="#D97706"
             onPress={() => router.push("/publisher/profile")}
           />
         </View>
 
         {/* Activité récente */}
         <View style={styles.sectionHeader}>
-          <View>
+          <View style={styles.sectionText}>
             <Text style={styles.sectionTitle}>Activité récente</Text>
             <Text style={styles.sectionSubtitle}>
-              Les dernières interactions sur vos annonces
+              Vos dernières interactions
             </Text>
           </View>
         </View>
 
         <View style={styles.activitySection}>
-          {recentVisits.length > 0 ? (
-            recentVisits.map((visit, index) => (
-              <ActivityCard
-                key={visit.id || index}
-                icon="calendar"
-                color="#10B981"
-                title="Nouvelle demande de visite"
-                subtitle={
-                  visit.property?.title ||
-                  visit.propertyTitle ||
-                  "Logement concerné"
-                }
-                onPress={() => router.push("/publisher/requests")}
-              />
-            ))
+          {loading ? (
+            <View style={styles.emptyState}>
+              <Ionicons name="sync-outline" size={26} color={COLORS.muted} />
+              <Text style={styles.emptyTitle}>
+                Chargement de votre activité…
+              </Text>
+            </View>
+          ) : recentVisits.length === 0 && recentMessages.length === 0 ? (
+            <View style={styles.emptyState}>
+              <View style={styles.emptyIcon}>
+                <Ionicons
+                  name="file-tray-outline"
+                  size={30}
+                  color={COLORS.primary}
+                />
+              </View>
+              <Text style={styles.emptyTitle}>Aucune activité récente</Text>
+              <Text style={styles.emptyDescription}>
+                Vos nouvelles demandes de visite et conversations apparaîtront
+                ici.
+              </Text>
+            </View>
           ) : (
-            <ActivityCard
-              icon="calendar-outline"
-              color="#9CA3AF"
-              title="Aucune demande récente"
-              subtitle="Vos futures demandes de visites apparaîtront ici."
-            />
-          )}
+            <>
+              {recentVisits.map((visit, index) => (
+                <ActivityCard
+                  key={`visit-${visit.id || index}`}
+                  icon="calendar"
+                  color={COLORS.green}
+                  title="Demande de visite"
+                  subtitle={
+                    visit.property?.title ||
+                    visit.propertyTitle ||
+                    "Logement concerné"
+                  }
+                  onPress={() => router.push("/publisher/requests")}
+                />
+              ))}
 
-          {recentMessages.length > 0 ? (
-            recentMessages.map((msg, index) => (
-              <ActivityCard
-                key={msg.id || index}
-                icon="chatbubble"
-                color="#8B5CF6"
-                title="Nouveau message"
-                subtitle={
-                  msg.lastMessage || msg.content || "Un client vous a contacté."
-                }
-                onPress={() => router.push("/publisher/messages")}
-              />
-            ))
-          ) : (
-            <ActivityCard
-              icon="chatbubble-outline"
-              color="#9CA3AF"
-              title="Aucun message récent"
-              subtitle="Vos discussions s'afficheront ici."
-            />
+              {recentMessages.map((msg, index) => (
+                <ActivityCard
+                  key={`message-${msg.id || index}`}
+                  icon="chatbubble"
+                  color={COLORS.purple}
+                  title="Conversation"
+                  subtitle={
+                    msg.lastMessage ||
+                    msg.content ||
+                    msg.lastMessageContent ||
+                    "Ouvrir la conversation"
+                  }
+                  onPress={() => router.push("/publisher/messages")}
+                />
+              ))}
+            </>
           )}
-
-          <ActivityCard
-            icon="home"
-            color="#2563EB"
-            title="Annonce publiée"
-            subtitle="Studio à Ouakam"
-            onPress={() => router.push("/publisher/listings")}
-          />
         </View>
 
+        {/* Pied de page */}
         <View style={styles.footer}>
+          <View style={styles.footerLogo}>
+            <Image
+              source={require("../../assets/images/easyrent-icon-1024.png")}
+              style={styles.footerLogoImage}
+              resizeMode="contain"
+            />
+            <Text style={styles.footerBrand}>Easy Rent</Text>
+          </View>
+
           <Text style={styles.footerText}>
-            Easy Rent · Votre espace immobilier
+            Votre espace immobilier, simplement.
           </Text>
         </View>
       </ScrollView>
@@ -257,6 +391,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: COLORS.background,
     paddingTop: 20,
+    paddingBottom: 26,
   },
 
   container: {
@@ -266,68 +401,158 @@ const styles = StyleSheet.create({
   content: {
     paddingHorizontal: 20,
     paddingTop: 18,
-    paddingBottom: 36,
+    paddingBottom: 40,
   },
 
   header: {
     flexDirection: "row",
-    alignItems: "flex-start",
+    alignItems: "center",
     justifyContent: "space-between",
-    marginBottom: 30,
-    paddingTop: 8,
+    marginBottom: 24,
   },
 
   headerText: {
     flex: 1,
-    paddingRight: 12,
+    paddingRight: 14,
   },
 
-  greeting: {
-    fontSize: 12,
+  eyebrow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 8,
+  },
+
+  eyebrowDot: {
+    width: 7,
+    height: 7,
+    borderRadius: 4,
+    backgroundColor: COLORS.green,
+    marginRight: 7,
+  },
+
+  eyebrowText: {
+    fontSize: 11,
     fontWeight: "800",
-    letterSpacing: 1.4,
+    letterSpacing: 1.3,
     color: COLORS.primary,
-    marginBottom: 9,
   },
 
-  name: {
+  title: {
     fontSize: 27,
     lineHeight: 34,
     fontWeight: "800",
     color: COLORS.text,
+    letterSpacing: -0.7,
   },
 
-  headerSubtitle: {
-    marginTop: 9,
-    fontSize: 14,
-    lineHeight: 21,
+  subtitle: {
+    marginTop: 6,
+    fontSize: 13,
+    lineHeight: 20,
     color: COLORS.muted,
   },
 
-  headerBadge: {
+  notificationButton: {
     width: 48,
     height: 48,
     borderRadius: 16,
-    backgroundColor: COLORS.primary,
+    backgroundColor: COLORS.surface,
+    borderWidth: 1,
+    borderColor: COLORS.border,
     alignItems: "center",
     justifyContent: "center",
-    shadowColor: COLORS.primary,
-    shadowOffset: { width: 0, height: 5 },
-    shadowOpacity: 0.18,
-    shadowRadius: 10,
-    elevation: 4,
   },
 
-  headerBadgeText: {
+  welcomeCard: {
+    position: "relative",
+    overflow: "hidden",
+    backgroundColor: COLORS.primary,
+    borderRadius: 24,
+    padding: 22,
+    marginBottom: 30,
+    minHeight: 220,
+  },
+
+  welcomeContent: {
+    zIndex: 2,
+    alignItems: "flex-start",
+    paddingRight: 20,
+  },
+
+  welcomeLabel: {
+    color: "#D9E7FF",
+    fontSize: 10,
+    fontWeight: "800",
+    letterSpacing: 1.6,
+    marginBottom: 10,
+  },
+
+  welcomeTitle: {
     color: "#FFFFFF",
-    fontSize: 16,
-    fontWeight: "900",
-    letterSpacing: 0.5,
+    fontSize: 22,
+    lineHeight: 29,
+    fontWeight: "800",
+  },
+
+  welcomeDescription: {
+    color: "#E0EAFE",
+    fontSize: 12,
+    lineHeight: 19,
+    marginTop: 9,
+    maxWidth: 235,
+  },
+
+  primaryButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#FFFFFF",
+    borderRadius: 12,
+    paddingHorizontal: 13,
+    paddingVertical: 11,
+    marginTop: 17,
+    gap: 6,
+  },
+
+  primaryButtonText: {
+    color: COLORS.primary,
+    fontSize: 12,
+    fontWeight: "800",
+  },
+
+  welcomeIcon: {
+    position: "absolute",
+    top: 20,
+    right: 18,
+    width: 66,
+    height: 66,
+    borderRadius: 21,
+    backgroundColor: "rgba(255,255,255,0.15)",
+    alignItems: "center",
+    justifyContent: "center",
+    zIndex: 1,
+  },
+
+  decorativeCircle: {
+    position: "absolute",
+    width: 155,
+    height: 155,
+    borderRadius: 78,
+    right: -65,
+    bottom: -75,
+    backgroundColor: "rgba(255,255,255,0.08)",
   },
 
   sectionHeader: {
-    marginTop: 6,
-    marginBottom: 16,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: 15,
+    marginTop: 2,
+  },
+
+  sectionText: {
+    flex: 1,
   },
 
   sectionTitle: {
@@ -338,26 +563,39 @@ const styles = StyleSheet.create({
   },
 
   sectionSubtitle: {
-    marginTop: 5,
-    fontSize: 13,
-    lineHeight: 19,
+    fontSize: 12,
+    lineHeight: 18,
+    marginTop: 4,
     color: COLORS.muted,
   },
 
-  statsContainer: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    justifyContent: "space-between",
-    rowGap: 12,
-    marginBottom: 27,
+  refreshButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 13,
+    backgroundColor: COLORS.blueSoft,
+    alignItems: "center",
+    justifyContent: "center",
+    marginLeft: 10,
   },
 
-  actionsContainer: {
+  statsGrid: {
     flexDirection: "row",
     flexWrap: "wrap",
     justifyContent: "space-between",
     rowGap: 12,
-    marginBottom: 27,
+  },
+
+  statCard: {
+    width: "48%",
+  },
+
+  actionsGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "space-between",
+    rowGap: 12,
+    marginBottom: 28,
   },
 
   activitySection: {
@@ -366,29 +604,68 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: COLORS.border,
     paddingHorizontal: 12,
-    paddingVertical: 6,
+    paddingVertical: 8,
+    overflow: "hidden",
+  },
+
+  emptyState: {
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 30,
+    paddingHorizontal: 16,
+  },
+
+  emptyIcon: {
+    width: 58,
+    height: 58,
+    borderRadius: 19,
+    backgroundColor: COLORS.blueSoft,
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 12,
+  },
+
+  emptyTitle: {
+    fontSize: 14,
+    fontWeight: "700",
+    color: COLORS.text,
+    textAlign: "center",
+    marginTop: 8,
+  },
+
+  emptyDescription: {
+    fontSize: 12,
+    lineHeight: 19,
+    color: COLORS.muted,
+    textAlign: "center",
+    marginTop: 6,
   },
 
   footer: {
     alignItems: "center",
-    paddingTop: 25,
-    paddingBottom: 5,
+    paddingTop: 18,
+    paddingBottom: 18,
+  },
+
+  footerLogo: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+  },
+
+  footerBrand: {
+    fontSize: 14,
+    fontWeight: "800",
+    color: COLORS.primary,
   },
 
   footerText: {
-    color: "#9CA3AF",
-    fontSize: 12,
-    fontWeight: "500",
+    marginTop: 5,
+    fontSize: 11,
+    color: COLORS.muted,
   },
-  notificationDot: {
-    position: "absolute",
-    top: 10,
-    right: 10,
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: "#F97316",
-    borderWidth: 1.5,
-    borderColor: "#2563EB",
-  },
+  footerLogoImage: {
+  width: 24,
+  height: 24,
+},
 });

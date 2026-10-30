@@ -4,12 +4,12 @@ import {
   View,
   Text,
   TouchableOpacity,
-  Alert,
   Switch,
   Platform,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
+import { useToast } from "../../context/ToastContext";
 
 import Header from "../../components/common/Header";
 import FormSection from "../../components/forms/FormSection";
@@ -105,6 +105,7 @@ function CounterRow({ icon, label, hint, value, onChange }) {
 
 export default function Features() {
   const { listing, updateListing } = useListing();
+  const { showToast } = useToast();
 
   function updateNumber(key, value) {
     updateListing({
@@ -121,10 +122,7 @@ export default function Features() {
   function handleNext() {
     // Vérification de la surface
     if (!listing.area.trim()) {
-      Alert.alert(
-        "Champ obligatoire",
-        "Veuillez saisir la surface du logement.",
-      );
+      showToast("Veuillez saisir la surface du logement.", "error");
       return;
     }
 
@@ -132,7 +130,7 @@ export default function Features() {
     const surface = Number(listing.area);
 
     if (isNaN(surface) || surface <= 0) {
-      Alert.alert("Surface invalide", "Veuillez saisir une surface valide.");
+      showToast("Veuillez saisir une surface valide.", "error");
       return;
     }
 

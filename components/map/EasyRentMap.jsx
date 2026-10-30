@@ -18,6 +18,7 @@ import MapView, { Marker, Callout } from "react-native-maps";
 import * as Location from "expo-location";
 import { router } from "expo-router";
 
+import { useToast } from "../../context/ToastContext";
 import { getProperties } from "../../services/properties";
 
 const INITIAL_REGION = {
@@ -100,6 +101,7 @@ export default function EasyRentMap() {
   const [properties, setProperties] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const { showToast } = useToast();
 
   const [userLocation, setUserLocation] = useState(null);
   const [locating, setLocating] = useState(false);
@@ -167,9 +169,9 @@ export default function EasyRentMap() {
       const { status } = await Location.requestForegroundPermissionsAsync();
 
       if (status !== "granted") {
-        Alert.alert(
-          "Autorisation nécessaire",
+        showToast(
           "Autorise l'accès à ta position dans les paramètres du téléphone.",
+          "error",
         );
         return;
       }
@@ -193,22 +195,26 @@ export default function EasyRentMap() {
         },
         800,
       );
-    } catch {
-      Alert.alert(
-        "Localisation impossible",
-        "Vérifie que le GPS est activé, puis réessaie.",
+
+      showToast("Ta position a été récupérée.", "success");
+    } catch (error) {
+      console.error("Erreur de géolocalisation :", error);
+
+      showToast(
+        "Localisation impossible. Vérifie que le GPS est activé, puis réessaie.",
+        "error",
       );
     } finally {
       setLocating(false);
     }
-  }, []);
+  }, [showToast]);
 
   const openDirections = useCallback(
     async (property) => {
       if (!hasValidCoordinates(property)) {
-        Alert.alert(
-          "Position indisponible",
+        showToast(
           "Ce logement ne possède pas de coordonnées GPS valides.",
+          "error",
         );
         return;
       }
@@ -227,14 +233,13 @@ export default function EasyRentMap() {
 
       try {
         await Linking.openURL(url);
-      } catch {
-        Alert.alert(
-          "Navigation indisponible",
-          "Impossible d'ouvrir l'application de navigation.",
-        );
+      } catch (error) {
+        console.error("Erreur ouverture navigation :", error);
+
+        showToast("Impossible d'ouvrir l'application de navigation.", "error");
       }
     },
-    [userLocation],
+    [userLocation, showToast],
   );
 
   const resetFilters = () => {
