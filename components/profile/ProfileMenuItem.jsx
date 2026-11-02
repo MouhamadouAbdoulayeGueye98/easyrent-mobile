@@ -1,3 +1,5 @@
+
+import React from "react";
 import {
   View,
   Text,
@@ -11,29 +13,46 @@ export default function ProfileMenuItem({
   icon,
   title,
   color = "#2563EB",
+  backgroundColor = "#EFF6FF",
+  danger = false,
   onPress,
 }) {
   return (
     <TouchableOpacity
       style={styles.item}
       onPress={onPress}
+      activeOpacity={0.75}
+      accessibilityRole="button"
+      accessibilityLabel={title}
     >
       <View style={styles.left}>
-        <Ionicons
-          name={icon}
-          size={24}
-          color={color}
-        />
+        <View
+          style={[
+            styles.iconContainer,
+            { backgroundColor },
+          ]}
+        >
+          <Ionicons
+            name={icon}
+            size={21}
+            color={color}
+          />
+        </View>
 
-        <Text style={styles.title}>
+        <Text
+          style={[
+            styles.title,
+            danger && styles.dangerTitle,
+          ]}
+        >
           {title}
         </Text>
       </View>
 
       <Ionicons
         name="chevron-forward"
-        size={20}
-        color="#9CA3AF"
+        size={19}
+        color={danger ? "#FCA5A5" : "#A1AAB8"}
       />
     </TouchableOpacity>
   );
@@ -41,25 +60,51 @@ export default function ProfileMenuItem({
 
 const styles = StyleSheet.create({
   item: {
+    minHeight: 68,
     backgroundColor: "#FFFFFF",
-    padding: 18,
-    borderRadius: 18,
-    marginBottom: 15,
+    paddingHorizontal: 14,
+    paddingVertical: 11,
+    borderRadius: 17,
 
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
+
+    borderWidth: 1,
+    borderColor: "#EEF1F6",
+
+    shadowColor: "#64748B",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.035,
+    shadowRadius: 5,
+    elevation: 1,
   },
 
   left: {
     flexDirection: "row",
     alignItems: "center",
+    flex: 1,
+  },
+
+  iconContainer: {
+    width: 43,
+    height: 43,
+    borderRadius: 14,
+    justifyContent: "center",
+    alignItems: "center",
   },
 
   title: {
-    marginLeft: 15,
-    fontSize: 17,
+    marginLeft: 14,
+    fontSize: 14,
     fontWeight: "600",
-    color: "#111827",
+    color: "#263449",
+  },
+
+  dangerTitle: {
+    color: "#EF4444",
   },
 });

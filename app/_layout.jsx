@@ -1,5 +1,6 @@
 import { Stack } from "expo-router";
 import { SafeAreaProvider } from "react-native-safe-area-context";
+import Toast from "react-native-toast-message";
 
 import { FavoritesProvider } from "../context/FavoritesContext";
 import { AuthProvider } from "../context/AuthContext";
@@ -16,6 +17,9 @@ export default function RootLayout() {
                 headerShown: false,
               }}
             />
+
+            {/* Affichage global des notifications Toast */}
+            <Toast />
           </FavoritesProvider>
         </AuthProvider>
       </ToastProvider>

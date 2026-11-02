@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   View,
   StatusBar,
+  Image,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
@@ -37,10 +38,10 @@ export default function HeroSection({ unreadCount = 0 }) {
         <View style={styles.header}>
           <View style={styles.brand}>
             <View style={styles.logo}>
-              <Ionicons
-                name="home"
-                size={18}
-                color="#FFFFFF"
+              <Image
+                source={require("../../assets/images/easyrent-icon-1024.png")}
+                style={styles.logoImage}
+                resizeMode="contain"
               />
             </View>
 
@@ -55,11 +56,7 @@ export default function HeroSection({ unreadCount = 0 }) {
             accessibilityRole="button"
             accessibilityLabel={`${notificationCount} notifications non lues`}
           >
-            <Ionicons
-              name="notifications-outline"
-              size={23}
-              color="#FFFFFF"
-            />
+            <Ionicons name="notifications-outline" size={23} color="#FFFFFF" />
 
             {notificationCount > 0 && (
               <View style={styles.badge}>
@@ -74,14 +71,8 @@ export default function HeroSection({ unreadCount = 0 }) {
         {/* HERO CONTENT */}
         <View style={styles.content}>
           <View style={styles.locationBadge}>
-            <Ionicons
-              name="location"
-              size={14}
-              color="#FFFFFF"
-            />
-            <Text style={styles.locationText}>
-              Dakar, Sénégal
-            </Text>
+            <Ionicons name="location" size={14} color="#FFFFFF" />
+            <Text style={styles.locationText}>Dakar, Sénégal</Text>
           </View>
 
           <Text style={styles.title}>
@@ -90,18 +81,13 @@ export default function HeroSection({ unreadCount = 0 }) {
           </Text>
 
           <Text style={styles.subtitle}>
-            Votre prochain chez-vous est peut-être à quelques clics.
-            Découvrez des chambres, studios et appartements partout
-            au Sénégal.
+            Votre prochain chez-vous est peut-être à quelques clics. Découvrez
+            des chambres, studios et appartements partout au Sénégal.
           </Text>
 
           <View style={styles.trustRow}>
             <View style={styles.trustIcon}>
-              <Ionicons
-                name="shield-checkmark"
-                size={15}
-                color="#FFFFFF"
-              />
+              <Ionicons name="shield-checkmark" size={15} color="#FFFFFF" />
             </View>
 
             <Text style={styles.trustText}>
@@ -272,5 +258,19 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(255,255,255,0.65)",
     alignSelf: "center",
     marginTop: 12,
+  },
+  logo: {
+    width: 38,
+    height: 38,
+    borderRadius: 12,
+    backgroundColor: "#FFFFFF",
+    justifyContent: "center",
+    alignItems: "center",
+    overflow: "hidden",
+  },
+
+  logoImage: {
+    width: 32,
+    height: 32,
   },
 });

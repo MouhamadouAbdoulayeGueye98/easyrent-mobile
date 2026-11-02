@@ -1,5 +1,13 @@
-import { ScrollView, StyleSheet } from "react-native";
+
+import React from "react";
+import {
+  ScrollView,
+  StyleSheet,
+  View,
+  Text,
+} from "react-native";
 import { router } from "expo-router";
+import { Ionicons } from "@expo/vector-icons";
 
 import Header from "../../components/common/Header";
 import { useAuth } from "../../context/AuthContext";
@@ -12,12 +20,15 @@ export default function Profile() {
 
   async function handleLogout() {
     await logout();
-    // router.replace("(tabs)");
   }
 
   if (!user) {
     return (
-      <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        style={styles.container}
+        contentContainerStyle={styles.guestContent}
+        showsVerticalScrollIndicator={false}
+      >
         <GuestScreen
           icon="person-circle-outline"
           title="Bienvenue sur EasyRent"
@@ -28,61 +39,146 @@ export default function Profile() {
   }
 
   return (
-    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-      <Header title="Mon profil" />
+    <View style={styles.container}>
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.content}
+      >
 
-      <ProfileHeader />
+        <ProfileHeader />
 
-      <ProfileMenuItem
-        icon="heart"
-        title="Mes favoris"
-        onPress={() => router.push("/favorites")}
-      />
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Mon activité</Text>
 
-      <ProfileMenuItem
-        icon="calendar"
-        title="Mes visites"
-        onPress={() => router.push("/requests")}
-      />
+          <View style={styles.menuGroup}>
+            <ProfileMenuItem
+              icon="heart-outline"
+              title="Mes favoris"
+              color="#EF476F"
+              backgroundColor="#FFF0F3"
+              onPress={() => router.push("/favorites")}
+            />
 
-      <ProfileMenuItem
-        icon="chatbubble"
-        title="Mes messages"
-        onPress={() => router.push("/messages")}
-      />
+            <ProfileMenuItem
+              icon="calendar-outline"
+              title="Mes visites"
+              color="#0D9488"
+              backgroundColor="#E6F7F5"
+              onPress={() => router.push("/requests")}
+            />
 
-      <ProfileMenuItem
-        icon="settings"
-        title="Paramètres"
-        onPress={() => router.push("/settings")}
-      />
+            <ProfileMenuItem
+              icon="chatbubble-ellipses-outline"
+              title="Mes messages"
+              color="#2563EB"
+              backgroundColor="#EFF6FF"
+              onPress={() => router.push("/messages")}
+            />
+          </View>
+        </View>
 
-      <ProfileMenuItem
-        icon="notifications"
-        title="Mes notifications"
-        onPress={() => router.push("/notifications")}
-      />
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Préférences</Text>
 
-      <ProfileMenuItem
-        icon="help-circle"
-        title="Aide"
-      />
+          <View style={styles.menuGroup}>
+            <ProfileMenuItem
+              icon="settings-outline"
+              title="Paramètres"
+              color="#7C3AED"
+              backgroundColor="#F3EFFF"
+              onPress={() => router.push("/settings")}
+            />
 
-      <ProfileMenuItem
-        icon="log-out"
-        title="Déconnexion"
-        color="#EF4444"
-        onPress={handleLogout}
-      />
-    </ScrollView>
+            <ProfileMenuItem
+              icon="notifications-outline"
+              title="Mes notifications"
+              color="#D97706"
+              backgroundColor="#FFF7E6"
+              onPress={() => router.push("/notifications")}
+            />
+
+            <ProfileMenuItem
+              icon="help-circle-outline"
+              title="Aide et assistance"
+              color="#0891B2"
+              backgroundColor="#E6F7FC"
+            />
+          </View>
+        </View>
+
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Compte</Text>
+
+          <View style={styles.menuGroup}>
+            <ProfileMenuItem
+              icon="log-out-outline"
+              title="Déconnexion"
+              color="#EF4444"
+              backgroundColor="#FEF2F2"
+              danger
+              onPress={handleLogout}
+            />
+          </View>
+        </View>
+
+        <View style={styles.footer}>
+          <Ionicons
+            name="home-outline"
+            size={14}
+            color="#94A3B8"
+          />
+          <Text style={styles.footerText}>
+            Easy Rent · Votre logement, en toute simplicité
+          </Text>
+        </View>
+      </ScrollView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    marginTop: 40,
     flex: 1,
-    backgroundColor: "#EEF2F7",
-    padding: 20,
+    backgroundColor: "#F5F7FB",
+    paddingTop: 30,
+  },
+
+  content: {
+    paddingBottom: 35,
+  },
+
+  guestContent: {
+    flexGrow: 1,
+  },
+
+  section: {
+    marginTop: 26,
+    paddingHorizontal: 20,
+  },
+
+  sectionTitle: {
+    fontSize: 15,
+    fontWeight: "700",
+    color: "#1E293B",
+    marginBottom: 13,
+    marginLeft: 3,
+  },
+
+  menuGroup: {
+    gap: 11,
+  },
+
+  footer: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: 30,
+    gap: 6,
+  },
+
+  footerText: {
+    fontSize: 11,
+    color: "#94A3B8",
+    fontWeight: "500",
   },
 });

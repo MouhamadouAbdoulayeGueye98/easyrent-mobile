@@ -19,6 +19,7 @@ import {
   useFocusEffect,
 } from "expo-router";
 
+import Toast from "react-native-toast-message";
 import { useAuth } from "../../context/AuthContext";
 import { useFavorites } from "../../context/FavoritesContext";
 import { startConversation } from "../../services/conversations";
@@ -128,10 +129,14 @@ export default function HouseDetail() {
 
       setIsModalVisible(false);
 
-      Alert.alert(
-        "Demande envoyée",
-        "Votre demande de visite a bien été envoyée. Vous serez informé de son évolution."
-      );
+      Toast.show({
+        type: "success",
+        text1: "Demande envoyée !",
+        text2:
+          "Votre demande de visite a bien été envoyée. Vous serez informé de son évolution.",
+        visibilityTime: 3500,
+        position: "top",
+      });
     } catch (error) {
       console.error("Erreur création visite :", error);
 
@@ -139,7 +144,13 @@ export default function HouseDetail() {
         error.response?.data?.message ||
         "Impossible d'envoyer la demande de visite.";
 
-      Alert.alert("Erreur", message);
+      Toast.show({
+        type: "error",
+        text1: "Échec de l'envoi",
+        text2: message,
+        visibilityTime: 3500,
+        position: "top",
+      });
     }
   }
 
