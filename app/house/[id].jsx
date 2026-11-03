@@ -1,4 +1,3 @@
-
 import React, { useCallback, useState } from "react";
 import {
   View,
@@ -13,11 +12,7 @@ import {
   StatusBar,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import {
-  router,
-  useLocalSearchParams,
-  useFocusEffect,
-} from "expo-router";
+import { router, useLocalSearchParams, useFocusEffect } from "expo-router";
 
 import Toast from "react-native-toast-message";
 import { useAuth } from "../../context/AuthContext";
@@ -108,7 +103,7 @@ export default function HouseDetail() {
       return () => {
         isActive = false;
       };
-    }, [id, user, loadFavorites])
+    }, [id, user, loadFavorites]),
   );
 
   function handleReservation() {
@@ -171,8 +166,7 @@ export default function HouseDetail() {
       console.error("Erreur création conversation :", error);
 
       const message =
-        error.response?.data?.message ||
-        "Impossible de contacter l'annonceur.";
+        error.response?.data?.message || "Impossible de contacter l'annonceur.";
 
       Alert.alert("Erreur", message);
     } finally {
@@ -194,11 +188,7 @@ export default function HouseDetail() {
     return (
       <View style={styles.center}>
         <View style={styles.errorIcon}>
-          <Ionicons
-            name="home-outline"
-            size={36}
-            color={COLORS.secondary}
-          />
+          <Ionicons name="home-outline" size={36} color={COLORS.secondary} />
         </View>
 
         <Text style={styles.errorTitle}>Logement introuvable</Text>
@@ -217,13 +207,10 @@ export default function HouseDetail() {
   }
 
   const activeEquipments = Object.entries(equipmentLabels).filter(
-    ([key]) => house[key]
+    ([key]) => house[key],
   );
 
-  const location = [
-    house.quartier,
-    house.city,
-  ].filter(Boolean).join(", ");
+  const location = [house.quartier, house.city].filter(Boolean).join(", ");
 
   return (
     <View style={styles.container}>
@@ -243,7 +230,7 @@ export default function HouseDetail() {
                 showsHorizontalScrollIndicator={false}
                 onMomentumScrollEnd={(event) => {
                   const index = Math.round(
-                    event.nativeEvent.contentOffset.x / width
+                    event.nativeEvent.contentOffset.x / width,
                   );
                   setCurrentImage(index);
                 }}
@@ -283,14 +270,8 @@ export default function HouseDetail() {
             </>
           ) : (
             <View style={styles.noImage}>
-              <Ionicons
-                name="image-outline"
-                size={52}
-                color={COLORS.muted}
-              />
-              <Text style={styles.noImageText}>
-                Aucune photo disponible
-              </Text>
+              <Ionicons name="image-outline" size={52} color={COLORS.muted} />
+              <Text style={styles.noImageText}>Aucune photo disponible</Text>
             </View>
           )}
 
@@ -301,11 +282,7 @@ export default function HouseDetail() {
               onPress={() => router.back()}
               activeOpacity={0.8}
             >
-              <Ionicons
-                name="arrow-back"
-                size={22}
-                color={COLORS.text}
-              />
+              <Ionicons name="arrow-back" size={22} color={COLORS.text} />
             </TouchableOpacity>
 
             <TouchableOpacity
@@ -353,9 +330,7 @@ export default function HouseDetail() {
             <View>
               <Text style={styles.priceLabel}>Loyer mensuel</Text>
               <View style={styles.priceRow}>
-                <Text style={styles.price}>
-                  {formatPrice(house.price)}
-                </Text>
+                <Text style={styles.price}>{formatPrice(house.price)}</Text>
                 <Text style={styles.currency}> FCFA</Text>
               </View>
             </View>
@@ -420,9 +395,7 @@ export default function HouseDetail() {
           {!!house.description && (
             <View style={styles.section}>
               <Text style={styles.sectionTitle}>À propos du logement</Text>
-              <Text style={styles.description}>
-                {house.description}
-              </Text>
+              <Text style={styles.description}>{house.description}</Text>
             </View>
           )}
 
@@ -464,9 +437,7 @@ export default function HouseDetail() {
                   <Text style={styles.ownerName}>
                     {house.owner.name || "Annonceur"}
                   </Text>
-                  <Text style={styles.ownerRole}>
-                    Propriétaire / Annonceur
-                  </Text>
+                  <Text style={styles.ownerRole}>Propriétaire / Annonceur</Text>
                 </View>
 
                 <View style={styles.ownerVerified}>
@@ -486,18 +457,13 @@ export default function HouseDetail() {
       <View style={styles.bottomBar}>
         <View style={styles.bottomPriceContainer}>
           <Text style={styles.bottomPriceLabel}>À partir de</Text>
-          <Text style={styles.bottomPrice}>
-            {formatPrice(house.price)}
-          </Text>
+          <Text style={styles.bottomPrice}>{formatPrice(house.price)}</Text>
           <Text style={styles.bottomCurrency}>FCFA / mois</Text>
         </View>
 
         <View style={styles.bottomActions}>
           <TouchableOpacity
-            style={[
-              styles.contactButton,
-              contacting && styles.disabledButton,
-            ]}
+            style={[styles.contactButton, contacting && styles.disabledButton]}
             onPress={handleContact}
             disabled={contacting}
             activeOpacity={0.8}
@@ -518,11 +484,7 @@ export default function HouseDetail() {
             onPress={handleReservation}
             activeOpacity={0.85}
           >
-            <Ionicons
-              name="calendar-outline"
-              size={18}
-              color={COLORS.white}
-            />
+            <Ionicons name="calendar-outline" size={18} color={COLORS.white} />
             <Text style={styles.reserveText}>Visiter</Text>
           </TouchableOpacity>
         </View>

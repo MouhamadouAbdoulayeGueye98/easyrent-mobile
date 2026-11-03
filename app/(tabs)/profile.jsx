@@ -102,6 +102,7 @@ export default function Profile() {
               title="Aide et assistance"
               color="#0891B2"
               backgroundColor="#E6F7FC"
+              onPress={() => router.push("/help")}
             />
           </View>
         </View>
