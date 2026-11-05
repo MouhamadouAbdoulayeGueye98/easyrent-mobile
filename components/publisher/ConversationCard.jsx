@@ -1,4 +1,3 @@
-
 import React from "react";
 import {
   View,
@@ -8,39 +7,75 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 
+const COLORS = {
+  primary: "#1749A6",
+  primaryLight: "#EAF0FC",
+  background: "#FFFFFF",
+  text: "#172033",
+  secondary: "#718096",
+  muted: "#A0AEC0",
+  border: "#EDF0F5",
+  unreadBackground: "#F5F8FF",
+  success: "#16A36A",
+};
+
 export default function ConversationCard({
   conversation,
   onPress,
 }) {
-  const unread = conversation.unread || 0;
+  const unread = Number(conversation?.unread || 0);
+
+  const name = conversation?.name || "Utilisateur";
+  const lastMessage = conversation?.lastMessage || "Aucun message";
+  const property = conversation?.property || "Logement";
+  const time = conversation?.time || "";
+
+  // Initiales du correspondant
+  const initials = name
+    .trim()
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((word) => word.charAt(0).toUpperCase())
+    .join("");
 
   return (
     <TouchableOpacity
-      style={styles.card}
+      style={[
+        styles.card,
+        unread > 0 && styles.unreadCard,
+      ]}
       onPress={onPress}
       activeOpacity={0.75}
     >
-      {/* Avatar */}
+      {/* AVATAR */}
       <View style={styles.avatarContainer}>
         <View style={styles.avatar}>
-          <Ionicons
-            name="person"
-            size={25}
-            color="#2563EB"
-          />
-        </View>
-
-        {unread > 0 && <View style={styles.onlineDot} />}
-      </View>
-
-      {/* Conversation details */}
-      <View style={styles.content}>
-        <View style={styles.nameRow}>
-          <Text style={styles.name} numberOfLines={1}>
-            {conversation.name || "Utilisateur"}
+          <Text style={styles.avatarText}>
+            {initials || "U"}
           </Text>
         </View>
 
+        {unread > 0 && (
+          <View style={styles.onlineDot} />
+        )}
+      </View>
+
+      {/* CONTENU */}
+      <View style={styles.content}>
+        {/* NOM */}
+        <View style={styles.nameRow}>
+          <Text
+            style={[
+              styles.name,
+              unread > 0 && styles.unreadName,
+            ]}
+            numberOfLines={1}
+          >
+            {name}
+          </Text>
+        </View>
+
+        {/* DERNIER MESSAGE */}
         <Text
           style={[
             styles.message,
@@ -48,25 +83,30 @@ export default function ConversationCard({
           ]}
           numberOfLines={1}
         >
-          {conversation.lastMessage || "Aucun message"}
+          {lastMessage}
         </Text>
 
+        {/* LOGEMENT */}
         <View style={styles.propertyRow}>
           <Ionicons
             name="home-outline"
             size={13}
-            color="#64748B"
+            color={COLORS.muted}
           />
-          <Text style={styles.property} numberOfLines={1}>
-            {conversation.property}
+
+          <Text
+            style={styles.property}
+            numberOfLines={1}
+          >
+            {property}
           </Text>
         </View>
       </View>
 
-      {/* Time and unread counter */}
+      {/* HEURE ET BADGE */}
       <View style={styles.rightContent}>
-        <Text style={styles.time}>
-          {conversation.time}
+        <Text style={styles.time} numberOfLines={1}>
+          {time}
         </Text>
 
         {unread > 0 ? (
@@ -76,11 +116,11 @@ export default function ConversationCard({
             </Text>
           </View>
         ) : (
-          <View style={styles.checkContainer}>
+          <View style={styles.readContainer}>
             <Ionicons
               name="checkmark-done"
               size={17}
-              color="#94A3B8"
+              color={COLORS.success}
             />
           </View>
         )}
@@ -93,81 +133,90 @@ const styles = StyleSheet.create({
   card: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#FFFFFF",
+    backgroundColor: COLORS.background,
     paddingVertical: 16,
     paddingHorizontal: 15,
-    borderRadius: 18,
-    marginBottom: 12,
-
+    borderRadius: 17,
+    marginBottom: 11,
     borderWidth: 1,
-    borderColor: "#F1F5F9",
-
-    elevation: 2,
-    shadowColor: "#0F172A",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.04,
-    shadowRadius: 8,
+    borderColor: COLORS.border,
   },
 
+  unreadCard: {
+    backgroundColor: COLORS.unreadBackground,
+    borderColor: "#E1EAFE",
+  },
+
+  // AVATAR
   avatarContainer: {
     position: "relative",
   },
 
   avatar: {
-    width: 54,
-    height: 54,
+    width: 53,
+    height: 53,
     borderRadius: 18,
-    backgroundColor: "#EFF6FF",
+    backgroundColor: COLORS.primaryLight,
     justifyContent: "center",
     alignItems: "center",
   },
 
+  avatarText: {
+    fontSize: 17,
+    fontWeight: "800",
+    color: COLORS.primary,
+  },
+
   onlineDot: {
     position: "absolute",
-    width: 11,
-    height: 11,
+    width: 12,
+    height: 12,
     borderRadius: 6,
-    backgroundColor: "#2563EB",
+    backgroundColor: COLORS.primary,
     borderWidth: 2,
     borderColor: "#FFFFFF",
     right: -2,
     bottom: -1,
   },
 
+  // CONTENU
   content: {
     flex: 1,
     marginLeft: 13,
     marginRight: 8,
     justifyContent: "center",
+    minWidth: 0,
   },
 
   nameRow: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 5,
+    marginBottom: 6,
   },
 
   name: {
     fontSize: 15,
-    fontWeight: "700",
-    color: "#0F172A",
+    fontWeight: "600",
+    color: COLORS.text,
     flexShrink: 1,
+  },
+
+  unreadName: {
+    fontWeight: "800",
   },
 
   message: {
     fontSize: 13,
-    color: "#64748B",
+    color: COLORS.secondary,
     marginBottom: 7,
   },
 
   unreadMessage: {
-    color: "#334155",
+    color: COLORS.text,
     fontWeight: "600",
   },
 
+  // LOGEMENT
   propertyRow: {
     flexDirection: "row",
     alignItems: "center",
@@ -176,22 +225,24 @@ const styles = StyleSheet.create({
 
   property: {
     fontSize: 11,
-    color: "#64748B",
+    color: COLORS.muted,
     flex: 1,
   },
 
+  // PARTIE DROITE
   rightContent: {
     alignItems: "flex-end",
     justifyContent: "space-between",
     alignSelf: "stretch",
     paddingVertical: 2,
-    minWidth: 45,
+    minWidth: 42,
   },
 
   time: {
     fontSize: 11,
-    color: "#94A3B8",
+    color: COLORS.muted,
     fontWeight: "500",
+    maxWidth: 55,
   },
 
   badge: {
@@ -199,7 +250,7 @@ const styles = StyleSheet.create({
     height: 21,
     paddingHorizontal: 5,
     borderRadius: 11,
-    backgroundColor: "#2563EB",
+    backgroundColor: COLORS.primary,
     justifyContent: "center",
     alignItems: "center",
   },
@@ -207,10 +258,10 @@ const styles = StyleSheet.create({
   badgeText: {
     color: "#FFFFFF",
     fontSize: 11,
-    fontWeight: "700",
+    fontWeight: "800",
   },
 
-  checkContainer: {
+  readContainer: {
     marginTop: 3,
   },
 });

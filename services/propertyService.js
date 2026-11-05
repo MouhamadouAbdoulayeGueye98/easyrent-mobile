@@ -9,7 +9,7 @@ export async function getProperties(filters = {}) {
 }
 
 export async function getMyProperties() {
-  const response = await api.get("/properties/my");
+  const response = await api.get("/properties/mine");
   return response.data;
 }
 

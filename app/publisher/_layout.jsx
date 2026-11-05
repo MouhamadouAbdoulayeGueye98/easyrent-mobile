@@ -131,7 +131,7 @@ export default function PublisherLayout() {
       />
 
       <Tabs.Screen
-        name="edit/[id]"
+        name="edit"
         options={{
           href: null,
         }}

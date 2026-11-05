@@ -294,6 +294,16 @@ export default function PublisherProfile() {
         <View style={styles.menuDivider} />
 
         <ProfileMenuItem
+          icon="help-circle-outline"
+          color="#F59E0B"
+          title="Aide et assistance"
+          subtitle="Guides et assistance pour annonceurs"
+          onPress={() => router.push("/help/advertiser")}
+        />
+
+        <View style={styles.menuDivider} />
+
+        <ProfileMenuItem
           icon="settings-outline"
           color={COLORS.primary}
           title="Paramètres"

@@ -11,6 +11,7 @@ import {
 
 import * as ImagePicker from "expo-image-picker";
 
+import { Ionicons } from "@expo/vector-icons";
 import { useEffect, useState } from "react";
 import { router, useLocalSearchParams } from "expo-router";
 
@@ -28,39 +29,53 @@ import {
 } from "../../../services/propertyService";
 
 export default function EditListing() {
-  const { id } = useLocalSearchParams();
+  const { id: routeId } = useLocalSearchParams();
+
+  const propertyId = Array.isArray(routeId) ? routeId[0] : routeId;
   const { showToast } = useToast();
 
   const [listing, setListing] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [loadError, setLoadError] = useState(false);
 
   useEffect(() => {
     loadProperty();
-  }, [id]);
+  }, [propertyId]);
 
   async function loadProperty() {
     try {
+      console.log("ÉCRAN MODIFICATION OUVERT");
+      console.log("IDENTIFIANT REÇU :", propertyId);
+
+      if (!propertyId) {
+        throw new Error("Identifiant de l'annonce introuvable.");
+      }
+
       setLoading(true);
+      setLoadError(false);
 
-      const data = await getPropertyById(id);
+      const data = await getPropertyById(propertyId);
 
-      console.log("ANNONCE À MODIFIER :", data);
+      console.log("ANNONCE RÉCUPÉRÉE :", data);
 
       setListing(data);
     } catch (error) {
       console.error(
-        "Erreur chargement annonce :",
-        error.response?.data || error,
+        "ERREUR CHARGEMENT ANNONCE :",
+        error.response?.data || error.message || error,
       );
 
-      showToast("Impossible de charger cette annonce.", "error");
-      router.back();
+      setLoadError(true);
+
+      Alert.alert(
+        "Erreur",
+        error.response?.data?.message || "Impossible de charger cette annonce.",
+      );
     } finally {
       setLoading(false);
     }
   }
-
   function handleChange(key, value) {
     setListing((prev) => ({
       ...prev,
@@ -126,7 +141,7 @@ export default function EditListing() {
 
       const image = result.assets[0];
 
-      const uploadedPhoto = await uploadPropertyPhoto(id, image);
+      const uploadedPhoto = await uploadPropertyPhoto(propertyId, image);
 
       setListing((prev) => ({
         ...prev,
@@ -162,7 +177,7 @@ export default function EditListing() {
         return;
       }
 
-      const updatedProperty = await updateProperty(id, {
+      const updatedProperty = await updateProperty(propertyId, {
         title: listing.title,
         description: listing.description,
 
@@ -221,8 +236,40 @@ export default function EditListing() {
     );
   }
 
-  if (!listing) {
-    return null;
+  if (loadError || !listing) {
+    return (
+      <View style={styles.loadingContainer}>
+        <Ionicons name="alert-circle-outline" size={55} color="#EF4444" />
+
+        <Text style={{ fontSize: 17, fontWeight: "700", marginTop: 15 }}>
+          Impossible de charger l'annonce
+        </Text>
+
+        <Text style={{ color: "#64748B", marginTop: 8, textAlign: "center" }}>
+          Vérifiez votre connexion ou réessayez.
+        </Text>
+
+        <TouchableOpacity
+          onPress={loadProperty}
+          style={{
+            backgroundColor: "#2563EB",
+            paddingHorizontal: 25,
+            paddingVertical: 13,
+            borderRadius: 12,
+            marginTop: 20,
+          }}
+        >
+          <Text style={{ color: "#FFFFFF", fontWeight: "700" }}>Réessayer</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          onPress={() => router.back()}
+          style={{ marginTop: 18 }}
+        >
+          <Text style={{ color: "#64748B" }}>Retour</Text>
+        </TouchableOpacity>
+      </View>
+    );
   }
 
   return (
