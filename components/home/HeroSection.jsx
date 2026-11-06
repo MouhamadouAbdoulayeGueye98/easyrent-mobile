@@ -6,7 +6,6 @@ import {
   Text,
   TouchableOpacity,
   View,
-  StatusBar,
   Image,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
@@ -23,7 +22,7 @@ export default function HeroSection({ unreadCount = 0 }) {
       imageStyle={styles.image}
       resizeMode="cover"
     >
-      <StatusBar barStyle="light-content" />
+      {/* <StatusBar barStyle="light-content" /> */}
 
       <LinearGradient
         colors={[

@@ -1,6 +1,16 @@
 import { router, useFocusEffect } from "expo-router";
-import { useCallback, useMemo, useState } from "react";
-import { ActivityIndicator, ScrollView, Text, View } from "react-native";
+import { useCallback, useMemo, useState, useRef } from "react";
+import {
+  ActivityIndicator,
+  // ScrollView,
+  Text,
+  View,
+  Animated,
+  StatusBar,
+} from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+
+// import { ActivityIndicator, ScrollView, Text, View } from "react-native";
 
 import { useAuth } from "../../context/AuthContext";
 import { useFavorites } from "../../context/FavoritesContext";
@@ -10,6 +20,8 @@ import { getProperties } from "../../services/properties";
 import CategoryList from "../../components/home/CategoryList";
 import HomeHeader from "../../components/home/HomeHeader";
 import NewSection from "../../components/home/NewSection";
+import HeroSection from "../../components/home/HeroSection";
+import SearchBar from "../../components/home/SearchBar";
 import PopularSection from "../../components/home/PopularSection";
 
 export default function Home() {
@@ -20,6 +32,25 @@ export default function Home() {
   const [houses, setHouses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [unreadCount, setUnreadCount] = useState(0);
+
+  const scrollY = useRef(new Animated.Value(0)).current;
+  const [showCompactHeader, setShowCompactHeader] = useState(false);
+  const insets = useSafeAreaInsets();
+
+  const handleScroll = useCallback(
+    (event) => {
+      const offsetY = event.nativeEvent.contentOffset.y;
+
+      scrollY.setValue(offsetY);
+
+      const shouldShow = offsetY > 40;
+
+      setShowCompactHeader((current) =>
+        current === shouldShow ? current : shouldShow,
+      );
+    },
+    [scrollY],
+  );
 
   useFocusEffect(
     useCallback(() => {
@@ -124,16 +155,32 @@ export default function Home() {
 
   return (
     <View style={{ flex: 1, backgroundColor: "#F9FAFB" }}>
-      <HomeHeader
-        unreadCount={unreadCount}
-        search={search}
-        onSearchChange={setSearch}
+      <StatusBar
+        barStyle={showCompactHeader ? "dark-content" : "light-content"}
+        backgroundColor={showCompactHeader ? "#FFFFFF" : "#1E293B"}
       />
 
-      <ScrollView
+      {/* HEADER COMPACT FIXE */}
+      <HomeHeader
+        unreadCount={unreadCount}
+        scrollY={scrollY}
+        visible={showCompactHeader}
+        topInset={insets.top}
+      />
+
+      {/* CONTENU SCROLLABLE */}
+      <Animated.ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 90 }}
+        scrollEventThrottle={16}
+        onScroll={handleScroll}
       >
+        <View style={{ paddingTop: insets.top }}>
+          <HeroSection unreadCount={unreadCount} />
+
+          <SearchBar value={search} onChangeText={setSearch} />
+        </View>
+
         <CategoryList
           selectedCategory={selectedCategory}
           onSelectCategory={setSelectedCategory}
@@ -149,13 +196,14 @@ export default function Home() {
               houses={filteredHouses}
               onSeeAll={() => openPropertiesList("popular")}
             />
+
             <NewSection
               houses={filteredHouses}
               onSeeAll={() => openPropertiesList("new")}
             />
           </>
         )}
-      </ScrollView>
+      </Animated.ScrollView>
     </View>
   );
 }
